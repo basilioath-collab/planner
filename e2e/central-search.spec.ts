@@ -14,7 +14,7 @@ test("busca a personagem diretamente no palco central", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Buscar personagem" })).toBeVisible({ timeout: 60_000 });
   expect(apiFailures).toEqual([]);
   await expect(page.locator(".heroSearch em")).toHaveCount(0);
-  await expect(page.getByText("Espada de Kromede Furiosa")).toBeVisible({
+  await expect(page.getByText("Espada de Kromede Furiosa").first()).toBeVisible({
     timeout: 60_000,
   });
   await expect(page.getByText("Aseo", { exact: true }).first()).toBeVisible();

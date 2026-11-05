@@ -1350,6 +1350,117 @@ nav button.active:after { left: 12px; right: 12px; height: 1px; background: var(
   .slot,.slot.right { border-radius: 24px 12px 12px 24px; }
   .slot.right { border-radius: 12px 24px 24px 12px; }
 }
+
+/* Estrutura operacional: navegação lateral + leitura concentrada do gear */
+main { padding-left: 70px; }
+.appNav {
+  position: absolute;
+  z-index: 60;
+  inset: 0 auto 0 0;
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 8px;
+  background: linear-gradient(180deg,#020a12 0,#04111b 48%,#02080e 100%);
+  border-right: 1px solid rgba(125,211,233,.18);
+  box-shadow: 12px 0 38px #0008;
+}
+.navSigil { width:44px; height:44px; display:grid; place-items:center; color:var(--ice); margin-bottom:8px; background:radial-gradient(circle,#12405a,#06121d 65%); border:1px solid rgba(202,180,111,.42); border-radius:50%; }
+.navSigil svg { width:23px; filter:drop-shadow(0 0 8px #65dff6); }
+.appNav button { width:46px; height:46px; position:relative; display:grid; place-items:center; color:#557784; background:transparent; border:1px solid transparent; border-radius:12px; }
+.appNav button svg { width:19px; }
+.appNav button span { position:absolute; left:54px; padding:6px 9px; color:#dff8ff; background:#06141f; border:1px solid var(--edge); font-size:9px; letter-spacing:.08em; opacity:0; pointer-events:none; transform:translateX(-5px); transition:.16s; white-space:nowrap; }
+.appNav button:hover span { opacity:1; transform:none; }
+.appNav button.active { color:var(--ice); background:linear-gradient(145deg,rgba(25,83,107,.9),rgba(8,31,45,.92)); border-color:rgba(112,219,242,.42); box-shadow:0 0 20px #4edaf329,inset 0 0 14px #6ce1f21a; }
+.appNav button.active:after { content:""; position:absolute; right:-10px; width:2px; height:22px; background:var(--gold); box-shadow:0 0 8px var(--gold); }
+header .brand { min-width:250px; }
+header .brand b { font:600 22px Inter; letter-spacing:0; }
+header .brand span { letter-spacing:.12em; }
+.liveStatus { margin:auto; padding:7px 13px; border:1px solid rgba(117,211,235,.18); border-radius:18px; background:#06131dba; color:#7da1ab; font-size:9px; letter-spacing:.08em; }
+.liveStatus i { display:inline-block; width:6px; height:6px; margin-right:7px; border-radius:50%; background:#69e2b2; box-shadow:0 0 9px #69e2b2; }
+.dock { left:92px; }
+.gearDock {
+  right:28%;
+  min-height:365px;
+  max-height:47vh;
+  background:linear-gradient(125deg,rgba(3,14,23,.985),rgba(5,24,35,.97));
+  box-shadow:inset 0 0 0 1px rgba(127,214,237,.25),18px -20px 60px #000a;
+}
+.gearOverview { min-width:0; }
+.gearProfile { height:66px; padding:9px 14px; display:flex; align-items:center; gap:11px; background:linear-gradient(90deg,rgba(8,39,52,.72),transparent); border-bottom:1px solid rgba(126,214,237,.15); }
+.profileMedallion { width:45px; height:45px; flex:none; display:grid; place-items:center; overflow:hidden; border-radius:50%; border:1px solid var(--gold); box-shadow:0 0 0 3px #06131d,0 0 0 4px rgba(110,217,239,.35),0 0 18px #55d9ef33; }
+.profileMedallion img { width:100%; height:100%; object-fit:cover; }
+.profileMedallion svg { width:21px; color:var(--ice); }
+.gearProfile h2 { margin:0; font:600 18px Inter; }
+.gearProfile p { margin:2px 0 0; font-size:9px; color:#7899a2; }
+.gearProfile small,.gearMapTitle span,.itemReadout small,.changeQueue small { color:#78bdcd; font-size:7px; letter-spacing:.16em; }
+.profileNumbers { margin-left:auto; display:flex; gap:25px; }
+.profileNumbers em { font-style:normal; color:#738e96; font-size:8px; text-align:right; }
+.profileNumbers strong { display:block; color:#effbff; font:600 18px Cinzel; }
+.gearMap { padding:8px 13px 7px; border-bottom:1px solid rgba(126,214,237,.13); }
+.gearMapTitle { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.gearMapTitle b { color:var(--gold); font:12px Cinzel; }
+.gearTiles { display:flex; gap:5px; overflow-x:auto; scrollbar-width:thin; padding:2px 1px 5px; }
+.gearTiles button { min-width:48px; width:48px; padding:0; color:#668792; background:transparent; border:0; }
+.gearTiles button>span { width:42px; height:42px; margin:auto; position:relative; display:grid; place-items:center; overflow:hidden; border:1px solid rgba(125,211,233,.25); border-radius:9px; background:radial-gradient(circle,#123548,#05111b); }
+.gearTiles button.filled>span { border-color:rgba(213,188,113,.58); box-shadow:inset 0 0 0 2px #07131c; }
+.gearTiles button.active>span { border-color:var(--ice); box-shadow:0 0 0 2px rgba(94,215,239,.18),0 0 16px #57d9f240; }
+.gearTiles img { width:100%; height:100%; object-fit:cover; }
+.gearTiles svg { width:16px; }
+.gearTiles i { position:absolute; right:2px; top:2px; padding:1px 3px; color:#fff4ca; background:#02070dcc; font:7px Inter; font-style:normal; border-radius:4px; }
+.gearTiles small { display:block; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:6px; color:#6b8992; }
+.gearAnalysis { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(250px,.8fr); min-height:190px; }
+.itemReadout { padding:12px 14px; border-right:1px solid rgba(126,214,237,.13); }
+.itemReadoutHead { display:flex; gap:10px; align-items:center; }
+.itemReadoutHead>div { width:42px; height:42px; flex:none; display:grid; place-items:center; overflow:hidden; border:1px solid rgba(215,190,115,.56); border-radius:9px; background:#071622; }
+.itemReadoutHead img { width:100%; height:100%; object-fit:cover; }
+.itemReadoutHead svg { width:18px; }
+.itemReadoutHead section { min-width:0; }
+.itemReadout h3,.changeQueue h3 { margin:2px 0; font:600 13px Inter; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.itemReadout p { color:#bca968; font-size:8px; }
+.itemReadoutHead button,.changeQueue button { margin-left:auto; border:1px solid rgba(112,217,239,.35); color:#bdeefa; background:#0a2a3b; padding:6px 9px; font-size:8px; }
+.itemLines { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:10px; }
+.itemLines section { min-width:0; }
+.itemLines span,.itemLines em { display:block; margin-top:4px; color:#c5d8dd; font-size:8px; font-style:normal; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.itemLines span:before { content:""; display:inline-block; width:4px; height:4px; margin-right:6px; border-radius:50%; background:var(--ice-strong); box-shadow:0 0 6px var(--ice-strong); }
+.itemLines em { color:#617b84; }
+.changeQueue { padding:11px 12px; background:rgba(1,8,14,.34); }
+.changeQueue>header { height:auto; padding:0 0 8px; display:flex; background:none; border-bottom:1px solid rgba(126,214,237,.12); }
+.changeQueue>header>b { margin-left:auto; color:var(--ice); font:20px Cinzel; }
+.changeQueue ol { margin:7px 0 0; padding:0; list-style:none; }
+.changeQueue li { display:flex; align-items:center; gap:7px; padding:5px 0; border-bottom:1px solid rgba(126,214,237,.08); }
+.changeQueue li>span { min-width:0; display:grid; grid-template-columns:26px 1fr; grid-template-rows:auto auto; column-gap:7px; flex:1; }
+.changeQueue li img { grid-row:1/3; width:26px; height:26px; object-fit:cover; border-radius:5px; }
+.changeQueue li b { font-size:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.changeQueue li small { letter-spacing:.04em; }
+.queueEmpty { min-height:105px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:#66838c; }
+.queueEmpty svg { width:20px; color:var(--gold); margin-bottom:5px; }
+.queueEmpty b { color:#cbdce0; font-size:10px; }
+.queueEmpty span { width:85%; margin-top:3px; font-size:8px; }
+.capture .appNav { display:none; }
+.capture { padding-left:0; }
+
+@media (max-width: 1100px) {
+  .gearDock { right:12px; }
+  .gearAnalysis { grid-template-columns:1fr 240px; }
+}
+@media (max-width: 720px) {
+  main { padding-left:0; }
+  .appNav { position:fixed; inset:auto 0 0; width:auto; height:54px; flex-direction:row; justify-content:space-around; padding:4px 8px; }
+  .navSigil { display:none; }
+  .appNav button { width:48px; height:44px; }
+  .appNav button span { display:none; }
+  .appNav button.active:after { right:auto; bottom:-5px; width:22px; height:2px; }
+  .liveStatus { display:none; }
+  .gearDock { right:auto; }
+  .gearProfile { height:auto; }
+  .profileNumbers { gap:10px; }
+  .gearAnalysis { grid-template-columns:1fr; }
+  .itemReadout { border-right:0; border-bottom:1px solid rgba(126,214,237,.13); }
+  .itemLines { grid-template-columns:1fr; }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *:before,

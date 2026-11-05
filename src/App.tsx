@@ -13,6 +13,10 @@ import {
   X,
   Undo2,
   Redo2,
+  Home,
+  Layers3,
+  MapPinned,
+  BookOpen,
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import {
@@ -184,32 +188,23 @@ export default function App() {
         <i />
         <div className="runes">᛭ ᚨ ᛇ ᛟ ᚦ ᛭</div>
       </div>
+      <aside className="appNav" aria-label="Navegação principal">
+        <div className="navSigil"><Shield /></div>
+        {([
+          ["gear", Home, "Início"],
+          ["arcana", Layers3, "Arcanas"],
+          ["route", MapPinned, "Evolução"],
+          ["sources", BookOpen, "Referências"],
+        ] as const).map(([id, Icon, label]) => <button key={id} className={tab===id?"active":""} onClick={()=>setTab(id)} title={label}><Icon/><span>{label}</span></button>)}
+      </aside>
       <header>
         <div className="brand">
-          <Shield />
           <div>
-            <b>ASEO</b>
-            <span>Deus Armory · Personal Archive</span>
+            <b>{{gear:"Início",arcana:"Arcanas",route:"Evolução",sources:"Referências"}[tab]}</b>
+            <span>ASEO · Deus Personal Armory</span>
           </div>
         </div>
-        <nav>
-          {(["gear", "arcana", "route", "sources"] as const).map((t) => (
-            <button
-              className={tab === t ? "active" : ""}
-              onClick={() => setTab(t)}
-              key={t}
-            >
-              {
-                {
-                  gear: "Equipamentos",
-                  arcana: "Arcanas",
-                  route: "Evolução",
-                  sources: "Referências",
-                }[t]
-              }
-            </button>
-          ))}
-        </nav>
+        <div className="liveStatus"><i/> NCSOFT · perfil ao vivo</div>
         <div className="actions">
           <span className="save">
             <Save size={13} />
@@ -421,16 +416,9 @@ export default function App() {
         />
       )}
       {!capture && !selected && (
-        <motion.section className="dock" initial={{ y: 80 }} animate={{ y: 0 }}>
+        <motion.section className={`dock ${tab === "gear" ? "gearDock" : ""}`} initial={{ y: 80 }} animate={{ y: 0 }}>
           {tab === "gear" && (
-            <GearPanel
-              slot={selected}
-              item={selected ? planned.items[selected] : undefined}
-              onClose={() => setSelected(undefined)}
-              onSave={(x) =>
-                mutate((b) => ({ ...b, items: { ...b.items, [x.slot]: x } }))
-              }
-            />
+            <GearOverview build={shown} current={current} planned={planned} onEdit={setSelected} />
           )}{" "}
           {tab === "arcana" && (
             <ArcanaPanel arcanas={planned.arcanas} onEnhance={enhance} />
@@ -814,128 +802,30 @@ function QuickSlot({
     </motion.aside>
   );
 }
-function GearPanel({
-  slot,
-  item,
-  onSave,
-  onClose,
-}: {
-  slot?: string;
-  item?: Item;
-  onSave: (x: Item) => void;
-  onClose: () => void;
-}) {
-  const [d, setD] = useState<Item>();
-  useEffect(
-    () =>
-      setD(
-        slot
-          ? item || {
-              id: crypto.randomUUID(),
-              slot,
-              name: "",
-              rarity: "A conferir",
-              enhancement: 0,
-              attributes: [],
-              additionals: [],
-              notes: "",
-              source: "Registro manual · não validado",
-              updated: "2026-11-05",
-              preserve: false,
-            }
-          : undefined,
-      ),
-    [slot, item],
-  );
-  if (!d)
-    return (
-      <div className="panelIntro">
-        <div>
-          <small>EQUIPAMENTOS</small>
-          <h2>Planeje sem sobrescrever o presente.</h2>
-          <p>Escolha um slot. Alterações entram apenas na build planejada.</p>
-        </div>
-        <div className="legend">
-          <span>
-            <i className="now" />
-            Atual
-          </span>
-          <span>
-            <i className="plan" />
-            Planejado
-          </span>
-          <span>
-            <i className="unknown" />A conferir
-          </span>
-        </div>
-      </div>
-    );
-  return (
-    <div className="editor">
-      <div>
-        <small>EDITANDO · {d.slot}</small>
-        <h2>{d.name || "Novo equipamento"}</h2>
-      </div>
-      <label>
-        Nome
-        <input
-          value={d.name}
-          onChange={(e) => setD({ ...d, name: e.target.value })}
-        />
-      </label>
-      <label>
-        Raridade
-        <select
-          value={d.rarity}
-          onChange={(e) => setD({ ...d, rarity: e.target.value })}
-        >
-          <option>A conferir</option>
-          <option>Heroico</option>
-          <option>Único</option>
-          <option>Raro</option>
-        </select>
-      </label>
-      <label>
-        Aprimoramento
-        <input
-          type="number"
-          value={d.enhancement}
-          onChange={(e) => setD({ ...d, enhancement: +e.target.value })}
-        />
-      </label>
-      <label className="wide">
-        Adicionais manuais (um por linha)
-        <textarea
-          value={d.additionals.join("\n")}
-          onChange={(e) =>
-            setD({
-              ...d,
-              additionals: e.target.value.split("\n").filter(Boolean),
-            })
-          }
-        />
-      </label>
-      <label className="check">
-        <input
-          type="checkbox"
-          checked={d.preserve}
-          onChange={(e) => setD({ ...d, preserve: e.target.checked })}
-        />
-        Preservar item
-      </label>
-      <button onClick={onClose}>Cancelar</button>
-      <button
-        className="primary"
-        disabled={!d.name}
-        onClick={() => {
-          onSave(d);
-          onClose();
-        }}
-      >
-        Aplicar ao planejado
-      </button>
+function GearOverview({build,current,planned,onEdit}:{build:Build;current:Build;planned:Build;onEdit:(slot:string)=>void}){
+  const [focus,setFocus]=useState("Arma");
+  const item=build.items[focus];
+  const changed=slots.filter(slot=>JSON.stringify(current.items[slot]||null)!==JSON.stringify(planned.items[slot]||null));
+  return <div className="gearOverview">
+    <header className="gearProfile">
+      <div className="profileMedallion">{build.skins?.[0]?.icon?<img src={build.skins[0].icon} alt=""/>:<Shield/>}</div>
+      <div><small>DEUS PERSONAL ARMORY</small><h2>Aseo</h2><p>Templário · Nv. a conferir · Zikel</p></div>
+      <div className="profileNumbers"><em>Gear<strong>{build.gs.toLocaleString("pt-BR")}</strong></em><em>Poder<strong>{build.cp.toLocaleString("pt-BR")}</strong></em></div>
+    </header>
+    <section className="gearMap">
+      <div className="gearMapTitle"><span>MAPA DO EQUIPAMENTO</span><b>{Object.values(build.items).filter(Boolean).length}/{slots.length}</b></div>
+      <div className="gearTiles">{slots.map(slot=>{const value=build.items[slot];return <button key={slot} className={`${focus===slot?"active":""} ${value?"filled":""}`} onClick={()=>setFocus(slot)} title={value?.name||slot}>
+        <span>{value?.icon?<img src={value.icon} alt=""/>:<Shield/>}{value&&<i>+{value.enhancement}</i>}</span><small>{slot}</small>
+      </button>})}</div>
+    </section>
+    <div className="gearAnalysis">
+      <article className="itemReadout">
+        <div className="itemReadoutHead"><div>{item?.icon?<img src={item.icon} alt=""/>:<Shield/>}</div><section><small>{focus} · {item?.rarity||"SLOT VAZIO"}</small><h3>{item?.name||"Nenhum item registrado"}</h3><p>{item?`+${item.enhancement}${item.exceedLevel?` · transcendência +${item.exceedLevel}`:""}`:"Escolha ou registre um item para este slot."}</p></section><button onClick={()=>onEdit(focus)}>Editar slot</button></div>
+        <div className="itemLines"><section><small>ATRIBUTOS BASE</small>{item?.attributes.length?item.attributes.map(x=><span key={x}>{x}</span>):<em>A conferir</em>}</section><section><small>ADICIONAIS / HABILIDADES</small>{item?.additionals.length?item.additionals.map(x=><span key={x}>{x}</span>):<em>Nenhuma linha confirmada</em>}</section></div>
+      </article>
+      <aside className="changeQueue"><header><div><small>ROTA PESSOAL</small><h3>Mudanças planejadas</h3></div><b>{changed.length}</b></header>{changed.length?<ol>{changed.map(slot=><li key={slot}><span>{planned.items[slot]?.icon&&<img src={planned.items[slot]!.icon} alt=""/>}<b>{planned.items[slot]?.name||`Remover ${slot}`}</b><small>{slot} · alteração pendente</small></span><button onClick={()=>onEdit(slot)}>Abrir</button></li>)}</ol>:<div className="queueEmpty"><Sparkles/><b>Build alinhada</b><span>Nenhuma troca planejada. Selecione um slot para criar um cenário.</span></div>}</aside>
     </div>
-  );
+  </div>
 }
 function ArcanaPanel({
   arcanas,
