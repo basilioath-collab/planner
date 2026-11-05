@@ -12,6 +12,7 @@ node_modules
 playwright-report
 test-results
 artifacts/
+assets/index-*
 aseo-backup*.json
 dist
 dist-ssr

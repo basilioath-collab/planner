@@ -9,6 +9,17 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      if (location.hostname.endsWith("github.io")) {
+        const css = document.createElement("link");
+        css.rel = "stylesheet";
+        css.href = "/planner/assets/app.css";
+        document.head.append(css);
+        const production = "/planner/assets/app.js";
+        import(/* @vite-ignore */ production);
+      } else {
+        import("/src/main.tsx");
+      }
+    </script>
   </body>
 </html>

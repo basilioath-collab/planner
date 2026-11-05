@@ -5,6 +5,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || "/",
   plugins: [react()],
+  build: { rollupOptions: { input: 'src/main.tsx', output: { entryFileNames: 'assets/app.js', chunkFileNames: 'assets/[name].js', assetFileNames: (asset) => asset.names?.some((name) => name.endsWith('.css')) ? 'assets/app.css' : 'assets/[name][extname]' } } },
   server: {
     proxy: {
       "/aion-api/search": {
