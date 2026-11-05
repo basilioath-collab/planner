@@ -13,9 +13,9 @@
       if (location.hostname.endsWith("github.io")) {
         const css = document.createElement("link");
         css.rel = "stylesheet";
-        css.href = "/planner/assets/app.css";
+        css.href = "/planner/assets/app.css?v=c88b38c";
         document.head.append(css);
-        const production = "/planner/assets/app.js";
+        const production = "/planner/assets/app.js?v=c88b38c";
         import(/* @vite-ignore */ production);
       } else {
         import("/src/main.tsx");
