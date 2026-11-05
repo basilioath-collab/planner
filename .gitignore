@@ -18,6 +18,7 @@ aseo-backup*.json
 dist
 dist-ssr
 *.local
+tools/
 
 # Editor directories and files
 .vscode/*

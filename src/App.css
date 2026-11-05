@@ -466,7 +466,7 @@ label.button,
   font-size: 11px;
   cursor: pointer;
 }
-.emptyHero input,
+.emptyHero > label input[type="file"],
 .frameTools input[type="file"],
 .button input {
   display: none;

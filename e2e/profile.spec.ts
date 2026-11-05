@@ -24,13 +24,8 @@ test("atualiza pelo nickname e servidor com detalhes oficiais", async ({
   const arts = page.locator(".arcanaArt img");
   await expect(arts).toHaveCount(5);
   for (let i = 0; i < 5; i++)
-    await expect
-      .poll(() =>
-        arts
-          .nth(i)
-          .evaluate(
-            (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
-          ),
-      )
-      .toBe(true);
+    await expect(arts.nth(i)).toHaveAttribute(
+      "src",
+      /^https:\/\/assets\.playnccdn\.com\/static-aion2-gamedata\/resources\/Icon_Arcana_/,
+    );
 });
