@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import path from "node:path";
 
 test("busca a personagem diretamente no palco central", async ({ page }) => {
   const apiFailures: string[] = [];
@@ -17,4 +18,7 @@ test("busca a personagem diretamente no palco central", async ({ page }) => {
     timeout: 60_000,
   });
   await expect(page.getByText("Aseo", { exact: true }).first()).toBeVisible();
+  await page.locator('.emptyHero input[type="file"]').setInputFiles(path.join(process.cwd(), "public", "deus-research-base-original.png"));
+  await expect(page.locator(".portraitFrame")).toBeVisible();
+  await page.screenshot({ path: "artifacts/aseo-v2-portrait-frame.png" });
 });

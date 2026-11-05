@@ -1201,6 +1201,155 @@ nav button.active:after { left: 12px; right: 12px; height: 1px; background: var(
   .character { inset:70px 3% 145px; }
   .dock { position:relative; inset:auto; margin:10px 10px 14px; min-height:160px; max-height:none; }
 }
+
+/* V2.1 — relicário da personagem e slots ornamentais */
+.portraitFrame {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  inset: 70px 13% 132px;
+  border: 1px solid rgba(216, 191, 116, .72);
+  border-radius: 50% 50% 7% 7% / 27% 27% 5% 5%;
+  box-shadow:
+    inset 0 0 0 4px rgba(2, 13, 22, .5),
+    inset 0 0 0 5px rgba(104, 210, 234, .16),
+    0 0 38px rgba(82, 197, 223, .12),
+    0 0 0 1px rgba(4, 12, 18, .9);
+}
+.portraitFrame:before,
+.portraitFrame:after {
+  content: "";
+  position: absolute;
+  top: 24%;
+  width: 18%;
+  height: 23%;
+  border: 1px solid rgba(205, 179, 101, .55);
+  border-block-color: transparent;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 6px rgba(192, 163, 82, .25));
+}
+.portraitFrame:before { left: -8%; transform: rotate(-24deg); }
+.portraitFrame:after { right: -8%; transform: rotate(24deg); }
+.portraitFrame i {
+  position: absolute;
+  top: 31%;
+  width: 17%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(222, 197, 121, .78));
+  transform-origin: right;
+}
+.portraitFrame i:first-child { left: -13%; transform: rotate(62deg); }
+.portraitFrame i:nth-child(2) { right: -13%; transform: scaleX(-1) rotate(62deg); }
+.portraitFrame span {
+  position: absolute;
+  left: 50%;
+  top: -13px;
+  width: 27px;
+  height: 27px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 1px solid rgba(229, 205, 132, .86);
+  background: radial-gradient(circle, #8fe7f5 0 12%, #123847 14% 31%, #07131c 33%);
+  box-shadow: 0 0 18px rgba(105, 220, 240, .45), inset 0 0 0 4px #061019;
+}
+.portraitFrame b {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 35%;
+  height: 13px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(135deg, transparent 7px, rgba(203, 183, 123, .82) 8px 9px, #07131d 10px) left/50% 100% no-repeat,
+    linear-gradient(225deg, transparent 7px, rgba(203, 183, 123, .82) 8px 9px, #07131d 10px) right/50% 100% no-repeat;
+}
+.hasPortrait .halo { opacity: .95; }
+.hasPortrait .character:before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 74%;
+  height: 90%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(92, 210, 235, .16), transparent 67%);
+  filter: blur(8px);
+}
+.slot,
+.slot.right {
+  clip-path: none;
+  border: 1px solid rgba(196, 171, 99, .24);
+  box-shadow:
+    inset 0 0 0 1px rgba(101, 206, 231, .1),
+    inset 18px 0 30px rgba(12, 54, 71, .18);
+}
+.slot { border-radius: 28px 12px 12px 28px; padding-left: 8px; }
+.slot.right { border-radius: 12px 28px 28px 12px; padding-right: 8px; }
+.slot:before,
+.slot.right:before {
+  top: 50%;
+  bottom: auto;
+  width: 17px;
+  height: 17px;
+  border: 1px solid rgba(214, 187, 108, .68);
+  border-radius: 50%;
+  background: radial-gradient(circle, #9deafa 0 11%, #173d4b 13% 31%, #06121b 34%);
+  transform: translateY(-50%);
+  box-shadow: 0 0 9px rgba(89, 216, 240, .3);
+  opacity: 1;
+}
+.slot:before { left: -7px; }
+.slot.right:before { right: -7px; left: auto; }
+.slot:after {
+  content: "◆";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  transform: translateY(-50%) scaleX(.62);
+  color: rgba(216, 189, 108, .68);
+  font-size: 9px;
+  text-shadow: 0 0 8px rgba(216, 189, 108, .45);
+}
+.slot.right:after { right: auto; left: -2px; }
+.slot:hover,
+.slot.right:hover {
+  border-color: rgba(231, 206, 133, .7);
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 222, 243, .24),
+    inset 18px 0 30px rgba(15, 75, 95, .24),
+    0 0 20px rgba(205, 177, 96, .12);
+}
+.slot .icon {
+  position: relative;
+  overflow: visible;
+  clip-path: none;
+  border-radius: 50%;
+  border: 1px solid rgba(229, 203, 126, .82);
+  box-shadow:
+    inset 0 0 0 2px #061019,
+    inset 0 0 0 3px rgba(111, 214, 236, .3),
+    0 0 0 2px rgba(8, 20, 28, .92),
+    0 0 0 3px rgba(191, 164, 87, .3),
+    0 0 12px rgba(206, 180, 101, .16);
+}
+.slot .icon:before,
+.slot .icon:after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  width: 16px;
+  height: 6px;
+  transform: translateX(-50%);
+  border-inline: 1px solid rgba(220, 193, 113, .7);
+}
+.slot .icon:before { top: -6px; border-radius: 50% 50% 0 0; }
+.slot .icon:after { bottom: -6px; border-radius: 0 0 50% 50%; }
+.slot .icon img { border-radius: 50%; padding: 3px; }
+
+@media (max-width: 720px) {
+  .portraitFrame { inset: 68px 5% 135px; }
+  .slot,.slot.right { border-radius: 24px 12px 12px 24px; }
+  .slot.right { border-radius: 12px 24px 24px 12px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *:before,

@@ -273,10 +273,11 @@ export default function App() {
             />
           ))}
         </aside>
-        <section className="stage" ref={stage}>
+        <section className={`stage ${image ? "hasPortrait" : ""}`} ref={stage}>
           <div className="halo" />
           <div className="spire s1" />
           <div className="spire s2" />
+          {image && <div className="portraitFrame" aria-hidden="true"><i/><i/><span/><b/></div>}
           <div className="identity">
             <small>REGISTRO DE COMBATE · ZIKEL 2402</small>
             <h1>Aseo</h1>
