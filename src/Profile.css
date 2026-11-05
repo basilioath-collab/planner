@@ -10,6 +10,7 @@
   .slot .icon { width: 35px; height: 35px; }
   .slot b { font-size: 10px; }
 }
+.arcanaPanel .cards{grid-template-columns:repeat(5,minmax(190px,1fr));gap:14px;padding:0 18px 20px;overflow-x:auto}.arcanaPanel .cards article{padding:0 12px 12px;background:linear-gradient(180deg,#0b2a3b 0,#07151e 45%,#061014 100%);border-color:#73dcee4d;box-shadow:inset 0 0 28px #50d7ef12}.arcanaArt{height:150px;margin:0 -12px 12px;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 45%,#6be2f238,transparent 60%)}.arcanaArt:after{content:"";position:absolute;inset:8px;border:1px solid #9cefff33;clip-path:polygon(8% 0,92% 0,100% 12%,100% 88%,92% 100%,8% 100%,0 88%,0 12%)}.arcanaArt img{width:132px;height:132px;object-fit:contain;filter:drop-shadow(0 0 18px #7be9ff88)}.arcanaArt>svg{width:72px;height:72px;color:#8ce8f3}.arcanaArt>span{position:absolute;left:10px;bottom:8px;font-size:8px;letter-spacing:.18em;color:#bcefff}.arcanaPanel .cards article>header{padding-bottom:10px}.arcanaPanel .cards article header b{font-size:13px}.arcanaPanel .cards article>button{font-size:9px;padding:7px 3px}.arcanaPanel .cards footer{font-size:8px}
 .profileModal > div {
   width: min(720px, calc(100vw - 28px));
   max-height: 85vh;

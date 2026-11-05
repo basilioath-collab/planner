@@ -52,6 +52,7 @@ const clone = <T,>(x: T): T => structuredClone(x),
     background: 0.8,
     light: 0.75,
   };
+const withArcanaArt=(b:Build):Build=>({...b,arcanas:b.arcanas.map(a=>({...a,icon:a.icon||initialBuild.arcanas.find(x=>x.id===a.id)?.icon}))});
 function dl(blob: Blob, name: string) {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -81,8 +82,8 @@ export default function App() {
     loadState()
       .then((s) => {
         if (s) {
-          setCurrent(s.current);
-          setPlanned(s.planned);
+          setCurrent(withArcanaArt(s.current));
+          setPlanned(withArcanaArt(s.planned));
           setFrame(s.frame);
           setImage(s.image);
         }
@@ -845,6 +846,10 @@ function ArcanaPanel({
       <div className="cards">
         {arcanas.map((a) => (
           <article key={a.id}>
+            <div className="arcanaArt">
+              {a.icon ? <img src={a.icon} crossOrigin="anonymous" referrerPolicy="no-referrer" alt={a.name} /> : <Shield />}
+              <span>{a.family}</span>
+            </div>
             <header>
               <div>
                 <small>{a.family}</small>

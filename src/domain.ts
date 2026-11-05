@@ -81,6 +81,7 @@ export const initialArcanas: Arcana[] = [
     ],
     history: [],
     target: "judgment",
+    icon: "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_Arcana_Card_Grail_u_PveSet2.png",
   },
   {
     id: "manuscript-mana",
@@ -95,6 +96,7 @@ export const initialArcanas: Arcana[] = [
     ],
     history: [],
     target: "punishment",
+    icon: "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_Arcana_Card_Parchment_u_DefenceSet2.png",
   },
   {
     id: "compass-vigor",
@@ -109,6 +111,7 @@ export const initialArcanas: Arcana[] = [
     ],
     history: [],
     target: "pummel",
+    icon: "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_Arcana_Card_Compass_u_PveSet2.png",
   },
   {
     id: "bell-mana",
@@ -122,6 +125,7 @@ export const initialArcanas: Arcana[] = [
       l("vitality", 1),
     ],
     history: [],
+    icon: "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_Arcana_Card_Bell_u_DefenceSet2.png",
   },
   {
     id: "mirror-mana",
@@ -135,6 +139,7 @@ export const initialArcanas: Arcana[] = [
       l("wardingShield", 2),
     ],
     history: [],
+    icon: "https://assets.playnccdn.com/static-aion2-gamedata/resources/Icon_Arcana_Card_Mirror_u_DefenceSet2.png",
   },
 ];
 export const slots = [
