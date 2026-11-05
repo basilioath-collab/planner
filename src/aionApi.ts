@@ -92,7 +92,7 @@ export async function fetchCharacter(hit: CharacterHit) {
       }),
     );
   }
-  return { info, equipment, details };
+  return { info, equipment, details, hit };
 }
 export function applyOfficialImport(base: Build, payload: any): Build {
   const list: ApiEquipment[] =
@@ -149,13 +149,25 @@ export function applyOfficialImport(base: Build, payload: any): Build {
       icon: iconUrl(w.icon),
       externalId: w.id,
     };
-  const arcanas = base.arcanas.map((a: Arcana) => {
-    const x = list.find(
-      (y) => y.slotPosName.startsWith("Arcana") && y.name === a.name,
-    );
-    return x
-      ? { ...a, enhancement: x.enchantLevel, icon: iconUrl(x.icon), externalId: x.id }
-      : a;
+  const incomingName = payload.info?.profile?.characterName || payload.hit?.name || base.profile.name;
+  const incomingServer = payload.hit?.serverName || base.profile.serverName;
+  const sameCharacter = incomingName.localeCompare(base.profile.name, undefined, { sensitivity: "base" }) === 0
+    && incomingServer.localeCompare(base.profile.serverName, undefined, { sensitivity: "base" }) === 0;
+  const arcanaRows = list.filter((x) => x.slotPosName.startsWith("Arcana"));
+  const arcanas: Arcana[] = arcanaRows.map((x) => {
+    const saved = sameCharacter ? base.arcanas.find((a) => a.name === x.name || a.externalId === x.id) : undefined;
+    return saved
+      ? { ...saved, enhancement: x.enchantLevel, icon: iconUrl(x.icon), externalId: x.id }
+      : {
+          id: `official-arcana-${x.slotPosName}-${x.id}`,
+          name: x.name,
+          family: "A conferir",
+          enhancement: x.enchantLevel,
+          lines: [],
+          history: [],
+          icon: iconUrl(x.icon),
+          externalId: x.id,
+        };
   });
   const skill = payload.equipment?.skill?.skillList || [];
   const skins = (payload.equipment?.equipment?.skinList || []).map((x: any) => ({
@@ -165,19 +177,25 @@ export function applyOfficialImport(base: Build, payload: any): Build {
     rarity: x.grade,
     icon: iconUrl(x.icon) || "",
   }));
-  const level = (name: string, fallback: number) =>
-    skill.find((x: any) => x.name === name)?.skillLevel ?? fallback;
+  const skillKey = (x: any) => `official-skill-${x.id ?? String(x.name).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const importedTotals = Object.fromEntries(skill.map((x: any) => [skillKey(x), Number(x.skillLevel || 0)]));
+  const importedSkillNames = Object.fromEntries(skill.map((x: any) => [skillKey(x), clean(x.name || "Habilidade")]));
   return {
     ...base,
+    profile: {
+      name: incomingName,
+      className: payload.info?.profile?.className || base.profile.className,
+      serverName: incomingServer,
+      region: payload.hit?.region || base.profile.region,
+      level: payload.info?.profile?.characterLevel ?? payload.hit?.level ?? base.profile.level,
+      profileImage: payload.info?.profile?.profileImage || payload.hit?.profileImageUrl || base.profile.profileImage,
+    },
     items,
     skins,
     arcanas,
-    totals: {
-      ...base.totals,
-      judgment: level("Julgamento", base.totals.judgment),
-      punishment: level("Punição", base.totals.punishment),
-      pummel: level("Agressão Contínua", base.totals.pummel),
-    },
+    totals: skill.length ? importedTotals : (sameCharacter ? base.totals : {}),
+    skillNames: skill.length ? importedSkillNames : (sameCharacter ? base.skillNames : {}),
+    rings: sameCharacter ? base.rings : {},
     gs:
       payload.info?.stat?.statList?.find((x: any) => x.type === "ItemLevel")
         ?.value ?? base.gs,

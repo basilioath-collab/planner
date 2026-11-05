@@ -5,8 +5,9 @@ import { initialBuild } from "./domain";
 afterEach(() => vi.unstubAllGlobals());
 
 describe("importação oficial", () => {
-  it("mapeia slots e preserva linhas manuais das arcanas", () => {
+  it("mapeia slots sem carregar dados manuais de outro personagem", () => {
     const out = applyOfficialImport(structuredClone(initialBuild), {
+      hit: { name: "OutroPersonagem", serverName: "Ariel", region: "la", level: 45 },
       info: { profile: { combatPower: 999 }, stat: { statList: [{ type: "ItemLevel", value: 321 }] } },
       equipment: { equipment: { equipmentList: [
         { id: 1, name: "Espada real", grade: "Unique", icon: "https://example/icon.png", enchantLevel: 10, exceedLevel: 2, slotPosName: "MainHand" },
@@ -16,9 +17,13 @@ describe("importação oficial", () => {
     expect(out.items.Arma?.name).toBe("Espada real");
     expect(out.items.Arma?.exceedLevel).toBe(2);
     expect(out.arcanas[0].enhancement).toBe(5);
-    expect(out.arcanas[0].lines[0].bonus).toBe(3);
+    expect(out.arcanas[0].lines).toEqual([]);
+    expect(out.rings).toEqual({});
+    expect(Object.values(out.totals)).toEqual([20]);
     expect(out.gs).toBe(321);
     expect(out.cp).toBe(999);
+    expect(out.profile.name).toBe("OutroPersonagem");
+    expect(out.profile.serverName).toBe("Ariel");
     expect(out.skins?.[0].name).toBe("Visual real");
   });
 

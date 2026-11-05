@@ -1,6 +1,6 @@
-# ASEO — Aion 2 Gear Planner
+# PAD PLAN — Aion 2 Personal Build Analytics
 
-Planejador local-first para Aseo (Templário, Zikel, América do Sul). Separa build atual e planejada, registra equipamentos e arcanas, persiste imagem/enquadramento no IndexedDB e exporta backups e capturas PNG.
+Planejador local-first para qualquer personagem carregado. Separa build atual e planejada, analisa equipamentos, adicionais, skills e arcanas, persiste imagem/enquadramento no IndexedDB e exporta backups e capturas PNG.
 
 ## Executar
 

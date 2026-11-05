@@ -2,7 +2,7 @@ export type SkillLine = { id: string; name: string; bonus: number };
 export type Arcana = {
   id: string;
   name: string;
-  family: "Vigor" | "Mana";
+  family: "Vigor" | "Mana" | "A conferir";
   enhancement: number;
   lines: SkillLine[];
   history: string[];
@@ -33,6 +33,14 @@ export type Skin = {
   rarity: string;
   icon: string;
 };
+export type CharacterProfile = {
+  name: string;
+  className: string;
+  serverName: string;
+  region: string;
+  level?: number;
+  profileImage?: string;
+};
 export type Frame = {
   x: number;
   y: number;
@@ -44,10 +52,12 @@ export type Frame = {
 export type Build = {
   id: string;
   name: string;
+  profile: CharacterProfile;
   items: Record<string, Item | undefined>;
   skins?: Skin[];
   arcanas: Arcana[];
   totals: Record<string, number>;
+  skillNames?: Record<string, string>;
   rings: Record<string, number>;
   gs: number;
   cp: number;
@@ -176,6 +186,7 @@ export const slots = [
 export const initialBuild: Build = {
   id: "aseo-current",
   name: "Atual · 05/11/2026",
+  profile: { name: "Aseo", className: "Templário", serverName: "Zikel", region: "la" },
   items: {},
   arcanas: initialArcanas,
   totals: { judgment: 20, punishment: 18, pummel: 16 },

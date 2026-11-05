@@ -9,7 +9,7 @@ const root = join(process.cwd(), "dist");
 const mime = { ".js":"text/javascript; charset=utf-8", ".css":"text/css; charset=utf-8", ".png":"image/png", ".webp":"image/webp", ".svg":"image/svg+xml" };
 const upstream = { search:"https://api-search.plaync.com/aion2global/search/v2/character", info:"https://aion2.plaync.com/api/character/info", equipment:"https://aion2.plaync.com/api/character/equipment", item:"https://aion2.plaync.com/api/character/equipment/item" };
 const attempts = new Map();
-const page = `<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07100f"><meta name="robots" content="noindex,nofollow"><title>ASEO — Aion 2 Gear Planner</title><link rel="stylesheet" href="/assets/app.css"></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>`;
+const page = `<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07100f"><meta name="robots" content="noindex,nofollow"><title>PAD PLAN — Aion 2 Personal Build Analytics</title><link rel="stylesheet" href="/assets/app.css"></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>`;
 
 http.createServer(async (req,res)=>{
   try{

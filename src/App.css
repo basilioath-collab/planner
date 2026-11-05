@@ -1461,6 +1461,37 @@ header .brand span { letter-spacing:.12em; }
   .itemReadout { border-right:0; border-bottom:1px solid rgba(126,214,237,.13); }
   .itemLines { grid-template-columns:1fr; }
 }
+
+/* PAD PLAN — retrato contido e recomendações analíticas */
+.hasPortrait .character {
+  inset: 77px 13.8% 139px;
+  overflow: hidden;
+  border-radius: 50% 50% 6% 6% / 27% 27% 5% 5%;
+  background: radial-gradient(ellipse at 50% 42%, rgba(71,183,210,.17), rgba(1,8,14,.62) 72%);
+  box-shadow: inset 0 0 55px #000b;
+}
+.hasPortrait .character > img { width:100%; height:100%; max-width:none; max-height:none; object-fit:contain; }
+.hasPortrait .portraitFrame { z-index:6; border-color:rgba(237,210,130,.92); box-shadow:inset 0 0 0 4px rgba(2,13,22,.64),inset 0 0 0 5px rgba(233,205,121,.28),inset 0 0 32px rgba(105,211,234,.14),0 0 24px rgba(213,180,91,.22),0 0 0 1px #061019; }
+.hasPortrait .identity { z-index:7; }
+.recommendationQueue { overflow:hidden; }
+.contextSwitch { display:flex; gap:4px; margin:7px 0 5px; }
+.contextSwitch button { margin:0; border-color:rgba(112,217,239,.16); color:#668993; background:#06131d; padding:4px 8px; }
+.contextSwitch button.active { color:#031017; background:var(--ice); border-color:var(--ice); }
+.recommendationQueue ol { max-height:132px; overflow:auto; }
+.recommendationQueue li.recPriority { align-items:flex-start; padding-left:8px; border-left:2px solid #5f8993; }
+.recommendationQueue li.recPriority.p1 { border-left-color:#e3c779; }
+.recommendationQueue li.recPriority.p2 { border-left-color:#6bd9ef; }
+.recommendationQueue li.recPriority>span { display:block; }
+.recommendationQueue li.recPriority b,
+.recommendationQueue li.recPriority small { display:block; }
+.recommendationQueue li em { display:block; color:#78969f; margin-top:2px; font-size:7px; line-height:1.3; font-style:normal; white-space:normal; }
+.recommendationQueue li a { color:#bdeefa; border:1px solid rgba(112,217,239,.28); padding:4px 6px; font-size:7px; text-decoration:none; }
+.recommendationQueue footer { display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid rgba(126,214,237,.12); color:#6f929c; font-size:7px; }
+.recommendationQueue footer button { margin:0; }
+@media (max-width:720px){
+  .hasPortrait .character { inset:75px 5.8% 141px; }
+  .recommendationQueue ol { max-height:none; }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *:before,

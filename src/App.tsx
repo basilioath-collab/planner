@@ -44,6 +44,7 @@ import {
   fetchCharacter,
   searchCharacters,
 } from "./aionApi";
+import { analyzeBuild, type AnalysisContext } from "./recommendations";
 import "./App.css";
 import "./Profile.css";
 const clone = <T,>(x: T): T => structuredClone(x),
@@ -57,6 +58,7 @@ const clone = <T,>(x: T): T => structuredClone(x),
   };
 const withArcanaArt = (b: Build): Build => ({
   ...b,
+  profile: b.profile || initialBuild.profile,
   arcanas: b.arcanas.map((a) => ({
     ...a,
     icon: a.icon || initialBuild.arcanas.find((x) => x.id === a.id)?.icon,
@@ -113,6 +115,7 @@ export default function App() {
     return () => clearTimeout(t);
   }, [current, planned, frame, image]);
   const shown = mode === "current" ? current : planned,
+    profile = shown.profile || initialBuild.profile,
     totals = useMemo(
       () =>
         mode === "current" ? current.totals : projectedTotals(current, planned),
@@ -167,7 +170,7 @@ export default function App() {
           backgroundColor: "#071011",
         }),
         a = document.createElement("a");
-      a.download = `ASEO-${mode}.png`;
+      a.download = `PAD-PLAN-${profile.name}-${mode}.png`;
       a.href = data;
       a.click();
     }
@@ -201,7 +204,7 @@ export default function App() {
         <div className="brand">
           <div>
             <b>{{gear:"Início",arcana:"Arcanas",route:"Evolução",sources:"Referências"}[tab]}</b>
-            <span>ASEO · Deus Personal Armory</span>
+            <span>PAD PLAN · Personal Analysis & Development</span>
           </div>
         </div>
         <div className="liveStatus"><i/> NCSOFT · perfil ao vivo</div>
@@ -242,7 +245,7 @@ export default function App() {
             Planejada <Sparkles size={14} />
           </button>
         </div>
-        <span>DEUS ARCHIVE // ASEO · TEMPLÁRIO · ZIKEL</span>
+        <span>DEUS ARCHIVE // {profile.name.toUpperCase()} · {profile.className.toUpperCase()} · {profile.serverName.toUpperCase()}</span>
         <div className="metrics">
           <em>
             GS <b>{shown.gs.toLocaleString("pt-BR")}</b>
@@ -274,10 +277,10 @@ export default function App() {
           <div className="spire s2" />
           {image && <div className="portraitFrame" aria-hidden="true"><i/><i/><span/><b/></div>}
           <div className="identity">
-            <small>REGISTRO DE COMBATE · ZIKEL 2402</small>
-            <h1>Aseo</h1>
+            <small>REGISTRO DE COMBATE · {profile.serverName.toUpperCase()}</small>
+            <h1>{profile.name}</h1>
             <p>
-              Templário <i /> América do Sul
+              {profile.className} <i /> {profile.level ? `Nível ${profile.level}` : "Nível a conferir"}
             </p>
           </div>
           <div
@@ -359,14 +362,10 @@ export default function App() {
             </div>
           )}
           <div className="skillTotals">
-            {[
-              ["judgment", "Julgamento"],
-              ["punishment", "Punição"],
-              ["pummel", "Pummel"],
-            ].map(([id, n]) => (
+            {Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id, value]) => (
               <div key={id} className={totals[id] >= 20 ? "goal" : ""}>
-                <span>{n}</span>
-                <b>{totals[id]}</b>
+                <span>{shown.skillNames?.[id] || ({judgment:"Julgamento",punishment:"Punição",pummel:"Pummel"} as Record<string,string>)[id] || id}</span>
+                <b>{value}</b>
                 <small>
                   {mode === "planned" && totals[id] !== current.totals[id]
                     ? `${totals[id] - current.totals[id] > 0 ? "+" : ""}${totals[id] - current.totals[id]} no cenário`
@@ -374,10 +373,11 @@ export default function App() {
                 </small>
               </div>
             ))}
+            {!Object.keys(totals).length && <div><span>Habilidades</span><b>—</b><small>a conferir</small></div>}
           </div>
           {capture && (
             <div className="captureMark">
-              ASEO · {mode === "current" ? "BUILD ATUAL" : "CENÁRIO PLANEJADO"}{" "}
+              PAD PLAN · {profile.name.toUpperCase()} · {mode === "current" ? "BUILD ATUAL" : "CENÁRIO PLANEJADO"}{" "}
               · 05 NOV 2026
             </div>
           )}
@@ -804,12 +804,15 @@ function QuickSlot({
 }
 function GearOverview({build,current,planned,onEdit}:{build:Build;current:Build;planned:Build;onEdit:(slot:string)=>void}){
   const [focus,setFocus]=useState("Arma");
+  const [context,setContext]=useState<AnalysisContext>("pve");
   const item=build.items[focus];
   const changed=slots.filter(slot=>JSON.stringify(current.items[slot]||null)!==JSON.stringify(planned.items[slot]||null));
+  const recommendations=analyzeBuild(build,context);
+  const profile=build.profile||initialBuild.profile;
   return <div className="gearOverview">
     <header className="gearProfile">
-      <div className="profileMedallion">{build.skins?.[0]?.icon?<img src={build.skins[0].icon} alt=""/>:<Shield/>}</div>
-      <div><small>DEUS PERSONAL ARMORY</small><h2>Aseo</h2><p>Templário · Nv. a conferir · Zikel</p></div>
+      <div className="profileMedallion">{profile.profileImage?<img src={profile.profileImage} alt=""/>:build.skins?.[0]?.icon?<img src={build.skins[0].icon} alt=""/>:<Shield/>}</div>
+      <div><small>PAD PLAN · PERFIL ANALÍTICO</small><h2>{profile.name}</h2><p>{profile.className} · {profile.level?`Nv. ${profile.level}`:"Nv. a conferir"} · {profile.serverName}</p></div>
       <div className="profileNumbers"><em>Gear<strong>{build.gs.toLocaleString("pt-BR")}</strong></em><em>Poder<strong>{build.cp.toLocaleString("pt-BR")}</strong></em></div>
     </header>
     <section className="gearMap">
@@ -823,7 +826,7 @@ function GearOverview({build,current,planned,onEdit}:{build:Build;current:Build;
         <div className="itemReadoutHead"><div>{item?.icon?<img src={item.icon} alt=""/>:<Shield/>}</div><section><small>{focus} · {item?.rarity||"SLOT VAZIO"}</small><h3>{item?.name||"Nenhum item registrado"}</h3><p>{item?`+${item.enhancement}${item.exceedLevel?` · transcendência +${item.exceedLevel}`:""}`:"Escolha ou registre um item para este slot."}</p></section><button onClick={()=>onEdit(focus)}>Editar slot</button></div>
         <div className="itemLines"><section><small>ATRIBUTOS BASE</small>{item?.attributes.length?item.attributes.map(x=><span key={x}>{x}</span>):<em>A conferir</em>}</section><section><small>ADICIONAIS / HABILIDADES</small>{item?.additionals.length?item.additionals.map(x=><span key={x}>{x}</span>):<em>Nenhuma linha confirmada</em>}</section></div>
       </article>
-      <aside className="changeQueue"><header><div><small>ROTA PESSOAL</small><h3>Mudanças planejadas</h3></div><b>{changed.length}</b></header>{changed.length?<ol>{changed.map(slot=><li key={slot}><span>{planned.items[slot]?.icon&&<img src={planned.items[slot]!.icon} alt=""/>}<b>{planned.items[slot]?.name||`Remover ${slot}`}</b><small>{slot} · alteração pendente</small></span><button onClick={()=>onEdit(slot)}>Abrir</button></li>)}</ol>:<div className="queueEmpty"><Sparkles/><b>Build alinhada</b><span>Nenhuma troca planejada. Selecione um slot para criar um cenário.</span></div>}</aside>
+      <aside className="changeQueue recommendationQueue"><header><div><small>BASE ANALÍTICA · GLOBAL S1</small><h3>Melhores próximos passos</h3></div><b>{recommendations.length}</b></header><div className="contextSwitch">{(["pve","pvp","solo"] as const).map(id=><button key={id} className={context===id?"active":""} onClick={()=>setContext(id)}>{id==="pve"?"PvE":id==="pvp"?"PvP":"Solo"}</button>)}</div>{recommendations.length?<ol>{recommendations.slice(0,4).map(rec=><li key={rec.id} className={`recPriority p${rec.priority}`}><span><b>{rec.title}</b><small>{rec.area} · {rec.confidence}</small><em>{rec.action}</em></span>{rec.slot?<button onClick={()=>onEdit(rec.slot!)}>Abrir</button>:rec.sourceUrl?<a href={rec.sourceUrl} target="_blank" rel="noreferrer">Fonte</a>:null}</li>)}</ol>:<div className="queueEmpty"><Sparkles/><b>Sem lacunas detectadas</b><span>A base atual não encontrou um próximo passo confirmado.</span></div>}<footer><span>{changed.length} mudança(s) já planejada(s)</span><button onClick={()=>onEdit(focus)}>Planejar {focus}</button></footer></aside>
     </div>
   </div>
 }
