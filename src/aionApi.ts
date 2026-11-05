@@ -57,7 +57,8 @@ export async function searchCharacters(
   return (d.list || []).map((x: any) => ({ ...x, name: clean(x.name) }));
 }
 export async function fetchCharacter(hit: CharacterHit) {
-  const q = `region=${hit.region}&characterId=${encodeURIComponent(hit.characterId)}&serverId=${hit.serverId}`;
+  const rawId = decodeURIComponent(hit.characterId);
+  const q = `region=${hit.region}&characterId=${encodeURIComponent(rawId)}&serverId=${hit.serverId}`;
   const [info, equipment] = await Promise.all([
     json(`/info?${q}`),
     json(`/equipment?${q}`),
