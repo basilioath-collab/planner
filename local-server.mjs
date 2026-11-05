@@ -30,7 +30,7 @@ async function proxy(url,res){
   const region=url.searchParams.get("region")||"la";if(!["la","nae","naw","eu","as"].includes(region)){res.writeHead(400);return res.end("Região inválida")}
   const target=new URL(upstream[kind]);
   if(kind==="search"){const nick=(url.searchParams.get("nick")||"").trim();if(!/^[\p{L}\p{N}_-]{2,20}$/u.test(nick)){res.writeHead(400);return res.end("Nickname inválido")}target.searchParams.set("keyword",nick);target.searchParams.set("localeInfo","pt-BR")}
-  else for(const key of ["characterId","serverId","id","slotPos","enchantLevel","exceedLevel","boardId"]){const value=url.searchParams.get(key);if(value)target.searchParams.set(key,value)}
+  else for(const key of ["characterId","serverId","id","slotPos","enchantLevel","exceedLevel","boardId","_t"]){const value=url.searchParams.get(key);if(value)target.searchParams.set(key,value)}
   target.searchParams.set("region",region);if(kind!=="search")target.searchParams.set("lang","pt-BR");
-  const response=await fetch(target,{headers:{Accept:"application/json","User-Agent":"ASEO-Gear-Planner/1.0"}});res.writeHead(response.status,{"Content-Type":response.headers.get("content-type")||"application/json","Cache-Control":"private,max-age=60"});res.end(Buffer.from(await response.arrayBuffer()));
+  const response=await fetch(target,{cache:"no-store",headers:{Accept:"application/json","Cache-Control":"no-cache","User-Agent":"ASEO-Gear-Planner/1.0"}});res.writeHead(response.status,{"Content-Type":response.headers.get("content-type")||"application/json","Cache-Control":"no-store"});res.end(Buffer.from(await response.arrayBuffer()));
 }

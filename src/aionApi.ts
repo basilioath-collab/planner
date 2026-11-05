@@ -43,8 +43,11 @@ const slotMap: Record<string, string> = {
 };
 const clean = (s: string) => s.replace(/<[^>]+>/g, "");
 const apiBase = import.meta.env.VITE_AION_API_BASE || "/aion-api";
-async function json(path: string) {
-  const r = await fetch(`${apiBase}${path}`);
+async function json(path: string, fresh = false) {
+  const r = await fetch(`${apiBase}${path}`, fresh ? {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache" },
+  } : undefined);
   if (!r.ok) throw Error(`Serviço Aion indisponível (${r.status})`);
   return r.json();
 }
@@ -59,10 +62,12 @@ export async function searchCharacters(
 }
 export async function fetchCharacter(hit: CharacterHit) {
   const rawId = decodeURIComponent(hit.characterId);
-  const q = `region=${hit.region}&characterId=${encodeURIComponent(rawId)}&serverId=${hit.serverId}`;
+  // O perfil deve refletir o estado ao clicar em atualizar. O mesmo padrão de
+  // cache-buster é usado por armories que consomem a API oficial da NCSOFT.
+  const q = `region=${hit.region}&characterId=${encodeURIComponent(rawId)}&serverId=${hit.serverId}&_t=${Date.now()}`;
   const [info, equipment] = await Promise.all([
-    json(`/info?${q}`),
-    json(`/equipment?${q}`),
+    json(`/info?${q}`, true),
+    json(`/equipment?${q}`, true),
   ]);
   const rows: ApiEquipment[] = equipment?.equipment?.equipmentList || [];
   const details: Record<number, any> = {};
@@ -72,6 +77,7 @@ export async function fetchCharacter(hit: CharacterHit) {
         try {
           details[x.slotPos] = await json(
             `/item?${q}&id=${x.id}&slotPos=${x.slotPos}&enchantLevel=${x.enchantLevel}&exceedLevel=${x.exceedLevel || 0}`,
+            true,
           );
         } catch {
           /* o resumo oficial permanece utilizável */

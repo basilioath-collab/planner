@@ -47,6 +47,7 @@ export default {
         "enchantLevel",
         "exceedLevel",
         "boardId",
+        "_t",
       ]) {
         const value = url.searchParams.get(key);
         if (value) target.searchParams.set(key, value);
@@ -54,9 +55,10 @@ export default {
       target.searchParams.set("lang", "pt-BR");
     }
     target.searchParams.set("region", region);
-    const cache = caches.default,
+    const fresh = kind !== "search" && url.searchParams.has("_t"),
+      cache = caches.default,
       key = new Request(target.toString(), request),
-      cached = await cache.match(key);
+      cached = fresh ? null : await cache.match(key);
     if (cached) return cors(cached, origin);
     const response = await fetch(target, {
         headers: {
@@ -67,9 +69,9 @@ export default {
       out = new Response(response.body, response);
     out.headers.set(
       "Cache-Control",
-      kind === "search" ? "public,max-age=60" : "public,max-age=300",
+      fresh ? "no-store" : kind === "search" ? "public,max-age=60" : "public,max-age=300",
     );
-    ctx.waitUntil(cache.put(key, out.clone()));
+    if (!fresh) ctx.waitUntil(cache.put(key, out.clone()));
     return cors(out, origin);
   },
 };
