@@ -10,4 +10,5 @@ export default defineConfig({
     '/aion-api/info': { target: 'https://aion2.plaync.com', changeOrigin: true, rewrite: (p) => p.replace('/aion-api/info', '/api/character/info') + '&lang=pt-BR' },
     '/aion-api/equipment': { target: 'https://aion2.plaync.com', changeOrigin: true, rewrite: (p) => p.replace('/aion-api/equipment', '/api/character/equipment') + '&lang=pt-BR' },
   }},
+  test: { exclude: ['e2e/**', 'node_modules/**', 'dist/**'] },
 })
