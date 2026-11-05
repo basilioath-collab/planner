@@ -45,6 +45,7 @@ import {
   searchCharacters,
 } from "./aionApi";
 import { analyzeBuild, type AnalysisContext } from "./recommendations";
+import { additionsForSlot } from "./additionalCatalog";
 import "./App.css";
 import "./Profile.css";
 const clone = <T,>(x: T): T => structuredClone(x),
@@ -162,6 +163,18 @@ export default function App() {
       alert((e as Error).message);
     }
   };
+  const setArcanaLine = (cardId: string, lineId: string, bonus: number) => {
+    mutate((b) => ({...b, arcanas:b.arcanas.map(card => {
+      if (card.id !== cardId) return card;
+      const next = {...card, lines:card.lines.map(line=>line.id===lineId?{...line,bonus}:line)};
+      if (pointsUsed(next) > pointsAvailable(next)) {
+        alert(`Distribuição inválida: ${pointsUsed(next)}/${pointsAvailable(next)} pontos.`);
+        return card;
+      }
+      return next;
+    })}));
+  };
+  const setArcanaTarget = (cardId:string, target:string) => mutate(b=>({...b,arcanas:b.arcanas.map(a=>a.id===cardId?{...a,target}:a)}));
   const exportPng = async () => {
     if (stage.current) {
       const data = await toPng(stage.current, {
@@ -177,7 +190,7 @@ export default function App() {
   };
   return (
     <main
-      className={capture ? "capture" : ""}
+      className={`${capture ? "capture" : ""} section-${tab}`}
       style={
         {
           "--bgIntensity": frame.background,
@@ -207,18 +220,12 @@ export default function App() {
             <span>PAD PLAN · Personal Analysis & Development</span>
           </div>
         </div>
-        <div className="liveStatus"><i/> NCSOFT · perfil ao vivo</div>
+        <HeroSearch compact ready={status !== "Carregando…"} base={current} onApply={(b)=>{setCurrent(b);setPlanned(clone(b));setMode("current");setTab("gear")}} />
         <div className="actions">
           <span className="save">
             <Save size={13} />
             {status}
           </span>
-          <button
-            onClick={() => setProfileImport(true)}
-            title="Atualizar personagem"
-          >
-            <Upload /> Atualizar
-          </button>
           <button onClick={undo} disabled={!history.length} title="Desfazer">
             <Undo2 />
           </button>
@@ -255,6 +262,11 @@ export default function App() {
           </em>
         </div>
       </section>
+      {!capture && tab !== "gear" && <section className="modulePage">
+        {tab === "arcana" && <ArcanaPanel arcanas={planned.arcanas} currentArcanas={current.arcanas} onEnhance={enhance} onSetLine={setArcanaLine} onSetTarget={setArcanaTarget} />}
+        {tab === "route" && <Route totals={projectedTotals(current, planned)} />}
+        {tab === "sources" && <Sources />}
+      </section>}
       <div className="workspace">
         <aside className="rail left">
           {slots.slice(0, Math.ceil(slots.length / 2)).map((s, i) => (
@@ -316,8 +328,7 @@ export default function App() {
               <div className="emptyHero">
                 <small>LOCALIZAR PERSONAGEM</small>
                 <b>Entre direto na sua build</b>
-                <HeroSearch ready={status !== "Carregando…"} base={current} onApply={(b)=>{setCurrent(b);setPlanned(clone(b));setMode("current")}} />
-                <span className="or"><i/> ou personalize a composição <i/></span>
+                <span className="or"><i/> personalize a composição <i/></span>
                 <label>
                   <ImagePlus /> Adicionar print da personagem
                   <input
@@ -402,6 +413,7 @@ export default function App() {
         <QuickSlot
           slot={selected}
           item={planned.items[selected]}
+          currentItem={current.items[selected]}
           onClose={() => setSelected(undefined)}
           onSave={(x) =>
             mutate((b) => ({ ...b, items: { ...b.items, [x.slot]: x } }))
@@ -415,18 +427,11 @@ export default function App() {
           }
         />
       )}
-      {!capture && !selected && (
+      {!capture && !selected && tab === "gear" && (
         <motion.section className={`dock ${tab === "gear" ? "gearDock" : ""}`} initial={{ y: 80 }} animate={{ y: 0 }}>
           {tab === "gear" && (
             <GearOverview build={shown} current={current} planned={planned} onEdit={setSelected} />
           )}{" "}
-          {tab === "arcana" && (
-            <ArcanaPanel arcanas={planned.arcanas} onEnhance={enhance} />
-          )}{" "}
-          {tab === "route" && (
-            <Route totals={projectedTotals(current, planned)} />
-          )}{" "}
-          {tab === "sources" && <Sources />}
         </motion.section>
       )}
       {profileImport && (
@@ -543,11 +548,11 @@ function AppearanceRibbon({skins}:{skins:NonNullable<Build["skins"]>}){
     </figure>)}</div>
   </section>
 }
-function HeroSearch({base,onApply,ready}:{base:Build;onApply:(b:Build)=>void;ready:boolean}){
+function HeroSearch({base,onApply,ready,compact=false}:{base:Build;onApply:(b:Build)=>void;ready:boolean;compact?:boolean}){
   const saved=(()=>{try{return JSON.parse(localStorage.getItem("aseo-profile")||"{}")}catch{return {}}})();
   const[nick,setNick]=useState(saved.nick||"Aseo"),[server,setServer]=useState(saved.server||"Zikel"),[busy,setBusy]=useState(false),[error,setError]=useState("");
   const run=async()=>{setBusy(true);setError("");try{const hits=await searchCharacters(nick,"la"),hit=hits.find(h=>h.name.toLocaleLowerCase()===nick.trim().toLocaleLowerCase()&&h.serverName.toLocaleLowerCase()===server.trim().toLocaleLowerCase());if(!hit)throw Error("Personagem ou servidor não encontrado.");localStorage.setItem("aseo-profile",JSON.stringify({nick:nick.trim(),server:server.trim(),region:"la"}));onApply(applyOfficialImport(base,await fetchCharacter(hit)))}catch(e){setError((e as Error).message.includes("404")?"Atualização online temporariamente indisponível.":(e as Error).message)}finally{setBusy(false)}};
-  return <div className="heroSearch"><div><input aria-label="Nickname" value={nick} onChange={e=>setNick(e.target.value)} placeholder="Nickname"/><input aria-label="Servidor" value={server} onChange={e=>setServer(e.target.value)} placeholder="Servidor"/><button onClick={run} disabled={!ready||busy||!nick.trim()||!server.trim()}>{!ready?"Carregando…":busy?"Atualizando…":"Buscar personagem"}</button></div>{error&&<em>{error}</em>}<p>América do Sul · dados públicos oficiais NCSOFT</p></div>
+  return <div className={`heroSearch ${compact?"headerSearch":""}`}><div><input aria-label="Nickname" value={nick} onChange={e=>setNick(e.target.value)} placeholder="Nickname"/><input aria-label="Servidor" value={server} onChange={e=>setServer(e.target.value)} placeholder="Servidor"/><button onClick={run} disabled={!ready||busy||!nick.trim()||!server.trim()}>{!ready?"Carregando…":busy?"Buscando…":"Pesquisar"}</button></div>{error&&<em>{error}</em>}{!compact&&<p>América do Sul · dados públicos oficiais NCSOFT</p>}</div>
 }
 function ProfileImport({
   base,
@@ -690,12 +695,14 @@ function Slot({
 function QuickSlot({
   slot,
   item,
+  currentItem,
   onSave,
   onRemove,
   onClose,
 }: {
   slot: string;
   item?: Item;
+  currentItem?: Item;
   onSave: (x: Item) => void;
   onRemove: () => void;
   onClose: () => void;
@@ -715,7 +722,10 @@ function QuickSlot({
   });
   const [d, setD] = useState<Item>(() => item || blank());
   useEffect(() => setD(item || blank()), [slot, item]);
+  const options = additionsForSlot(slot, [...(currentItem?.additionals || []), ...(item?.additionals || [])]);
+  const setLine = (index:number, value:string) => setD({...d, additionals:d.additionals.map((x,i)=>i===index?value:x)});
   return (
+    <div className="itemEditorBackdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}>
     <motion.aside
       className="quickSlot"
       initial={{ opacity: 0, scale: 0.96 }}
@@ -724,7 +734,7 @@ function QuickSlot({
       <header>
         <div>
           <small>SLOT · {slot}</small>
-          <b>Seleção rápida</b>
+          <b>Planejar equipamento</b>
         </div>
         <button onClick={onClose} aria-label="Fechar">
           <X />
@@ -765,28 +775,11 @@ function QuickSlot({
           />
         </label>
       </div>
-      <label>
-        Adicionais diretos
-        <textarea
-          value={d.additionals.join("\n")}
-          placeholder={
-            "Um adicional por linha\nLinhas manuais ficam não validadas"
-          }
-          onChange={(e) =>
-            setD({
-              ...d,
-              additionals: e.target.value.split("\n").filter(Boolean),
-            })
-          }
-        />
-      </label>
-      <div className="addPreview">
-        {d.additionals.length ? (
-          d.additionals.map((a, i) => <span key={i}>✦ {a}</span>)
-        ) : (
-          <em>Nenhum adicional registrado</em>
-        )}
+      <div className="itemCompare">
+        <section><small>BUILD ATUAL</small><b>{currentItem?.name || "Slot vazio"}</b>{currentItem?.additionals.length?currentItem.additionals.map(x=><span key={x}>◆ {x}</span>):<em>Sem adicionais confirmados</em>}</section>
+        <section><small>CENÁRIO PLANEJADO</small><b>{d.name || "Novo item"}</b>{d.additionals.map((line,index)=><div className="additionalSelect" key={`${index}-${line}`}><select aria-label={`Adicional ${index+1}`} value={options.find(x=>line.startsWith(x.label))?.label||""} onChange={e=>setLine(index,e.target.value)}><option value="">Selecione um adicional…</option>{options.map(x=><option key={x.id} value={x.label}>{x.label}</option>)}</select><button aria-label={`Remover adicional ${index+1}`} onClick={()=>setD({...d,additionals:d.additionals.filter((_,i)=>i!==index)})}><X/></button></div>)}<button className="addLine" onClick={()=>setD({...d,additionals:[...d.additionals,""]})}>+ Adicionar linha planejada</button></section>
       </div>
+      <p className="catalogNotice">Catálogo Global parcial, filtrado por slot e complementado pelas linhas observadas no perfil oficial. Possibilidades não confirmadas continuam “a conferir”.</p>
       <footer>
         <span>Aplica somente à build planejada</span>
         <button
@@ -800,6 +793,7 @@ function QuickSlot({
         </button>
       </footer>
     </motion.aside>
+    </div>
   );
 }
 function GearOverview({build,current,planned,onEdit}:{build:Build;current:Build;planned:Build;onEdit:(slot:string)=>void}){
@@ -832,17 +826,23 @@ function GearOverview({build,current,planned,onEdit}:{build:Build;current:Build;
 }
 function ArcanaPanel({
   arcanas,
+  currentArcanas,
   onEnhance,
+  onSetLine,
+  onSetTarget,
 }: {
   arcanas: Arcana[];
+  currentArcanas: Arcana[];
   onEnhance: (a: Arcana, id: string) => void;
+  onSetLine: (cardId:string,lineId:string,bonus:number)=>void;
+  onSetTarget: (cardId:string,target:string)=>void;
 }) {
   return (
     <div className="arcanaPanel">
       <div className="arcanaHead">
         <div>
           <small>ARQUIVO DE ARCANAS</small>
-          <h2>Distribuição ponto a ponto.</h2>
+          <h2>Laboratório de distribuição.</h2>
         </div>
         <p>
           Premissa editável: 4 pontos iniciais + 1/aprimoramento, limite +5.
@@ -850,7 +850,9 @@ function ArcanaPanel({
         </p>
       </div>
       <div className="cards">
-        {arcanas.map((a) => (
+        {arcanas.map((a) => {
+          const currentCard=currentArcanas.find(x=>x.id===a.id||x.externalId===a.externalId);
+          return (
           <article key={a.id}>
             <div className="arcanaArt">
               {a.icon ? (
@@ -882,22 +884,19 @@ function ArcanaPanel({
                 {pointsUsed(a)} / {pointsAvailable(a)} pts
               </em>
             </div>
-            {a.lines.map((x) => (
-              <button
-                key={x.id}
-                onClick={() => onEnhance(a, x.id)}
-                disabled={!attemptsLeft(a)}
-              >
-                <span>{x.name}</span>
-                <b>+{x.bonus}</b>
-              </button>
-            ))}
+            <div className="arcanaLines">
+            {a.lines.map((x) => {
+              const now=currentCard?.lines.find(y=>y.id===x.id)?.bonus ?? x.bonus;
+              return <label key={x.id}><span><b>{x.name}</b><small>Atual +{now}</small></span><select aria-label={`${a.name} ${x.name}`} value={x.bonus} onChange={e=>onSetLine(a.id,x.id,+e.target.value)}>{Array.from({length:pointsAvailable(a)+1},(_,n)=><option key={n} value={n}>Planejado +{n}</option>)}</select></label>
+            })}
+            </div>
+            {!!a.lines.length && <label className="arcanaTarget">Habilidade alvo<select value={a.target||""} onChange={e=>onSetTarget(a.id,e.target.value)}><option value="">Selecione…</option>{a.lines.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label>}
             <footer>
               <span>{attemptsLeft(a)} tentativa(s)</span>
-              <span>Alvo: {a.target || "não definido"}</span>
+              <button disabled={!attemptsLeft(a)||!a.target} onClick={()=>a.target&&onEnhance(a,a.target)}>Registrar +1 no alvo</button>
             </footer>
           </article>
-        ))}
+        )})}
       </div>
     </div>
   );
