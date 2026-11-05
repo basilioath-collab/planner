@@ -65,6 +65,8 @@
   background: #74dcec;
   color: #042029;
 }
+.emptyHero{width:min(580px,92%)}.emptyHero>small{color:#b69b67;letter-spacing:.22em;font-size:8px}.heroSearch{width:100%;margin-top:8px}.heroSearch>div{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;padding:8px;background:#03111bd9;border:1px solid #75d8e955;box-shadow:0 0 28px #45cfe51c}.heroSearch input{min-width:0;background:#071b27;border:1px solid #8ce9f233;color:#eaffff;padding:11px 12px}.heroSearch button{background:linear-gradient(135deg,#ad9462,#dfc98c);border:0;color:#071116;padding:0 16px;font-weight:700}.heroSearch button:disabled{opacity:.5}.heroSearch em{display:block;color:#ffb5a8;font-size:10px;margin-top:7px}.heroSearch p{color:#66838a;font-size:8px;margin:7px 0 0}.emptyHero .or{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:8px;text-transform:uppercase;letter-spacing:.12em}.emptyHero .or i{height:1px;background:#6dbdca33;flex:1}.emptyHero>label{margin-top:0}
+@media(max-width:700px){.heroSearch>div{grid-template-columns:1fr}.heroSearch button{padding:11px}}
 @media (max-width: 700px) {
   .profileSearch {
     grid-template-columns: 1fr;

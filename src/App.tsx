@@ -315,11 +315,12 @@ export default function App() {
               />
             ) : (
               <div className="emptyHero">
-                <Shield />
-                <b>Sua Aseo entra aqui</b>
-                <span>PNG transparente ou screenshot</span>
+                <small>LOCALIZAR PERSONAGEM</small>
+                <b>Entre direto na sua build</b>
+                <HeroSearch base={current} onApply={(b)=>{setCurrent(b);setPlanned(clone(b));setMode("current")}} />
+                <span className="or"><i/> ou personalize a composição <i/></span>
                 <label>
-                  <ImagePlus /> Escolher imagem
+                  <ImagePlus /> Adicionar print da personagem
                   <input
                     type="file"
                     accept="image/png,image/webp,image/jpeg"
@@ -543,6 +544,12 @@ export default function App() {
       )}
     </main>
   );
+}
+function HeroSearch({base,onApply}:{base:Build;onApply:(b:Build)=>void}){
+  const saved=(()=>{try{return JSON.parse(localStorage.getItem("aseo-profile")||"{}")}catch{return {}}})();
+  const[nick,setNick]=useState(saved.nick||"Aseo"),[server,setServer]=useState(saved.server||"Zikel"),[busy,setBusy]=useState(false),[error,setError]=useState("");
+  const run=async()=>{setBusy(true);setError("");try{const hits=await searchCharacters(nick,"la"),hit=hits.find(h=>h.name.toLocaleLowerCase()===nick.trim().toLocaleLowerCase()&&h.serverName.toLocaleLowerCase()===server.trim().toLocaleLowerCase());if(!hit)throw Error("Personagem ou servidor não encontrado.");localStorage.setItem("aseo-profile",JSON.stringify({nick:nick.trim(),server:server.trim(),region:"la"}));onApply(applyOfficialImport(base,await fetchCharacter(hit)))}catch(e){setError((e as Error).message.includes("404")?"Atualização online temporariamente indisponível.":(e as Error).message)}finally{setBusy(false)}};
+  return <div className="heroSearch"><div><input aria-label="Nickname" value={nick} onChange={e=>setNick(e.target.value)} placeholder="Nickname"/><input aria-label="Servidor" value={server} onChange={e=>setServer(e.target.value)} placeholder="Servidor"/><button onClick={run} disabled={busy||!nick.trim()||!server.trim()}>{busy?"Atualizando…":"Buscar personagem"}</button></div>{error&&<em>{error}</em>}<p>América do Sul · dados públicos oficiais NCSOFT</p></div>
 }
 function ProfileImport({
   base,
