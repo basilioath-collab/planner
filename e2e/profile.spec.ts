@@ -7,6 +7,7 @@ test("atualiza pelo nickname e servidor com detalhes oficiais", async ({
   await expect(page.getByText("Espada de Kromede Furiosa").first()).toBeVisible({timeout:60_000});
   await expect(page.getByLabel("Aparências equipadas").locator("figure")).toHaveCount(13);
   await expect(page.getByText("VISUAL EQUIPADO")).toBeVisible();
+  await page.getByRole("button", {name:"Analisar build"}).click();
   await expect.poll(() => page.locator(".gearTiles button").first().evaluate((el) => el.getBoundingClientRect().width)).toBeLessThanOrEqual(52);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await expect.poll(() => page.locator(".appearanceItems img").evaluateAll((images: HTMLImageElement[]) => images.every(image => image.complete && image.naturalWidth > 0)), { timeout: 15_000 }).toBe(true);

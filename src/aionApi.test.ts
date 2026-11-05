@@ -1,10 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { applyOfficialImport, fetchCharacter } from "./aionApi";
+import { applyOfficialImport, fetchCharacter, pickCharacter } from "./aionApi";
 import { initialBuild } from "./domain";
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("importação oficial", () => {
+  it("aceita trecho inequívoco do servidor sem perder o personagem", () => {
+    const hits = [{ characterId:"1", name:"Zeus", level:45, serverId:2, serverName:"Zikel", region:"la" }];
+    expect(pickCharacter(hits,"zeus","kel")?.serverName).toBe("Zikel");
+  });
   it("mapeia slots sem carregar dados manuais de outro personagem", () => {
     const out = applyOfficialImport(structuredClone(initialBuild), {
       hit: { name: "OutroPersonagem", serverName: "Ariel", region: "la", level: 45 },

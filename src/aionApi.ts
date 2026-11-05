@@ -67,6 +67,13 @@ export async function searchCharacters(
   );
   return (d.list || []).map((x: any) => ({ ...x, name: clean(x.name) }));
 }
+const normalizeLookup = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase().replace(/\s+/g, "").trim();
+export function pickCharacter(hits: CharacterHit[], nick: string, server: string) {
+  const sameName = hits.filter((hit) => normalizeLookup(hit.name) === normalizeLookup(nick));
+  const wantedServer = normalizeLookup(server);
+  return sameName.find((hit) => normalizeLookup(hit.serverName) === wantedServer)
+    || sameName.find((hit) => normalizeLookup(hit.serverName).includes(wantedServer));
+}
 export async function fetchCharacter(hit: CharacterHit) {
   const rawId = decodeURIComponent(hit.characterId);
   // O perfil deve refletir o estado ao clicar em atualizar. O mesmo padrão de

@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { initialBuild } from "./domain";
-import { analyzeBuild } from "./recommendations";
+import { analyzeBuild, classGuides, resolveClassGuide } from "./recommendations";
 
 describe("motor analítico", () => {
+  it("reconhece as oito classes da versão Global", () => {
+    expect(classGuides).toHaveLength(8);
+    for (const name of ["Templário","Gladiador","Assassino","Arqueiro","Mago","Espiritualista","Clérigo","Encantador"])
+      expect(resolveClassGuide(name), name).toBeDefined();
+  });
   it("usa prioridades PvE por slot para Templário", () => {
     const build = structuredClone(initialBuild);
     build.items.Arma = {

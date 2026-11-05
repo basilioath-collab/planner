@@ -42,6 +42,7 @@ import {
 import {
   applyOfficialImport,
   fetchCharacter,
+  pickCharacter,
   searchCharacters,
 } from "./aionApi";
 import { analyzeBuild, type AnalysisContext } from "./recommendations";
@@ -85,7 +86,8 @@ export default function App() {
     [history, setHistory] = useState<Build[]>([]),
     [future, setFuture] = useState<Build[]>([]),
     [preview, setPreview] = useState<Saved>(),
-    [profileImport, setProfileImport] = useState(false);
+    [profileImport, setProfileImport] = useState(false),
+    [analysisOpen, setAnalysisOpen] = useState(false);
   const stage = useRef<HTMLDivElement>(null),
     drag = useRef<{ x: number; y: number; fx: number; fy: number } | null>(
       null,
@@ -251,6 +253,7 @@ export default function App() {
           >
             Planejada <Sparkles size={14} />
           </button>
+          {tab === "gear" && <button className={analysisOpen ? "on" : ""} onClick={()=>setAnalysisOpen(x=>!x)}><BookOpen size={14}/>{analysisOpen?"Fechar análise":"Analisar build"}</button>}
         </div>
         <span>DEUS ARCHIVE // {profile.name.toUpperCase()} · {profile.className.toUpperCase()} · {profile.serverName.toUpperCase()}</span>
         <div className="metrics">
@@ -347,7 +350,7 @@ export default function App() {
                 Zoom
                 <input
                   type="range"
-                  min=".4"
+                  min="1"
                   max="2.4"
                   step=".02"
                   value={frame.scale}
@@ -427,7 +430,7 @@ export default function App() {
           }
         />
       )}
-      {!capture && !selected && tab === "gear" && (
+      {!capture && !selected && tab === "gear" && analysisOpen && (
         <motion.section className={`dock ${tab === "gear" ? "gearDock" : ""}`} initial={{ y: 80 }} animate={{ y: 0 }}>
           {tab === "gear" && (
             <GearOverview build={shown} current={current} planned={planned} onEdit={setSelected} />
@@ -551,7 +554,7 @@ function AppearanceRibbon({skins}:{skins:NonNullable<Build["skins"]>}){
 function HeroSearch({base,onApply,ready,compact=false}:{base:Build;onApply:(b:Build)=>void;ready:boolean;compact?:boolean}){
   const saved=(()=>{try{return JSON.parse(localStorage.getItem("aseo-profile")||"{}")}catch{return {}}})();
   const[nick,setNick]=useState(saved.nick||"Aseo"),[server,setServer]=useState(saved.server||"Zikel"),[busy,setBusy]=useState(false),[error,setError]=useState("");
-  const run=async()=>{setBusy(true);setError("");try{const hits=await searchCharacters(nick,"la"),hit=hits.find(h=>h.name.toLocaleLowerCase()===nick.trim().toLocaleLowerCase()&&h.serverName.toLocaleLowerCase()===server.trim().toLocaleLowerCase());if(!hit)throw Error("Personagem ou servidor não encontrado.");localStorage.setItem("aseo-profile",JSON.stringify({nick:nick.trim(),server:server.trim(),region:"la"}));onApply(applyOfficialImport(base,await fetchCharacter(hit)))}catch(e){setError((e as Error).message.includes("404")?"Atualização online temporariamente indisponível.":(e as Error).message)}finally{setBusy(false)}};
+  const run=async()=>{setBusy(true);setError("");try{const hits=await searchCharacters(nick,"la"),hit=pickCharacter(hits,nick,server),sameName=hits.filter(h=>h.name.localeCompare(nick,undefined,{sensitivity:"base"})===0);if(!hit){const available=[...new Set(sameName.map(h=>h.serverName))].slice(0,4);throw Error(available.length?`Servidor não encontrado. Para ${nick}: ${available.join(", ")}.`:"Personagem não encontrado na região América do Sul.");}localStorage.setItem("aseo-profile",JSON.stringify({nick:hit.name,server:hit.serverName,region:"la"}));setNick(hit.name);setServer(hit.serverName);onApply(applyOfficialImport(base,await fetchCharacter(hit)))}catch(e){setError((e as Error).message.includes("404")?"Serviço oficial temporariamente indisponível.":(e as Error).message)}finally{setBusy(false)}};
   return <div className={`heroSearch ${compact?"headerSearch":""}`}><div><input aria-label="Nickname" value={nick} onChange={e=>setNick(e.target.value)} placeholder="Nickname"/><input aria-label="Servidor" value={server} onChange={e=>setServer(e.target.value)} placeholder="Servidor"/><button onClick={run} disabled={!ready||busy||!nick.trim()||!server.trim()}>{!ready?"Carregando…":busy?"Buscando…":"Pesquisar"}</button></div>{error&&<em>{error}</em>}{!compact&&<p>América do Sul · dados públicos oficiais NCSOFT</p>}</div>
 }
 function ProfileImport({
