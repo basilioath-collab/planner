@@ -43,6 +43,13 @@ const slotMap: Record<string, string> = {
 };
 const clean = (s: string) => s.replace(/<[^>]+>/g, "");
 const apiBase = import.meta.env.VITE_AION_API_BASE || "/aion-api";
+const iconUrl = (url?: string) => {
+  if (!url) return undefined;
+  try {
+    const name = new URL(url).pathname.split("/").at(-1);
+    return name ? `${apiBase}/asset?name=${encodeURIComponent(name)}` : url;
+  } catch { return url; }
+};
 async function json(path: string, fresh = false) {
   const r = await fetch(`${apiBase}${path}`, fresh ? {
     cache: "no-store",
@@ -120,7 +127,7 @@ export function applyOfficialImport(base: Build, payload: any): Build {
       source: `Perfil oficial Aion 2${d?.sources?.length ? ` · ${d.sources.join(", ")}` : ""}`,
       updated: new Date().toISOString().slice(0, 10),
       preserve: false,
-      icon: x.icon,
+      icon: iconUrl(x.icon),
       externalId: x.id,
       exceedLevel: x.exceedLevel,
     };
@@ -139,7 +146,7 @@ export function applyOfficialImport(base: Build, payload: any): Build {
       source: "Perfil oficial Aion 2",
       updated: new Date().toISOString().slice(0, 10),
       preserve: false,
-      icon: w.icon,
+      icon: iconUrl(w.icon),
       externalId: w.id,
     };
   const arcanas = base.arcanas.map((a: Arcana) => {
@@ -147,15 +154,23 @@ export function applyOfficialImport(base: Build, payload: any): Build {
       (y) => y.slotPosName.startsWith("Arcana") && y.name === a.name,
     );
     return x
-      ? { ...a, enhancement: x.enchantLevel, icon: x.icon, externalId: x.id }
+      ? { ...a, enhancement: x.enchantLevel, icon: iconUrl(x.icon), externalId: x.id }
       : a;
   });
   const skill = payload.equipment?.skill?.skillList || [];
+  const skins = (payload.equipment?.equipment?.skinList || []).map((x: any) => ({
+    id: x.id,
+    slot: x.slotPosName,
+    name: x.name,
+    rarity: x.grade,
+    icon: iconUrl(x.icon) || "",
+  }));
   const level = (name: string, fallback: number) =>
     skill.find((x: any) => x.name === name)?.skillLevel ?? fallback;
   return {
     ...base,
     items,
+    skins,
     arcanas,
     totals: {
       ...base.totals,

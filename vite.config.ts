@@ -8,6 +8,16 @@ export default defineConfig({
   build: { rollupOptions: { input: 'src/main.tsx', output: { entryFileNames: 'assets/app.js', chunkFileNames: 'assets/[name].js', assetFileNames: (asset) => asset.names?.some((name) => name.endsWith('.css')) ? 'assets/app.css' : 'assets/[name][extname]' } } },
   server: {
     proxy: {
+      "/aion-api/asset": {
+        target: "https://assets.playnccdn.com",
+        changeOrigin: true,
+        rewrite: (p) => {
+          const url = new URL(p, "http://local");
+          const name = url.searchParams.get("name") || "";
+          if (!/^[A-Za-z0-9_.-]+\.(png|webp)$/i.test(name)) return "/invalid";
+          return `/static-aion2-gamedata/resources/${name}`;
+        },
+      },
       "/aion-api/search": {
         target: "https://api-search.plaync.com",
         changeOrigin: true,

@@ -23,6 +23,14 @@ export default {
       });
     if (!origin) return new Response("Origin not allowed", { status: 403 });
     const kind = url.pathname.split("/").filter(Boolean).at(-1);
+    if (kind === "asset") {
+      const name = url.searchParams.get("name") || "";
+      if (!/^[A-Za-z0-9_.-]+\.(png|webp)$/i.test(name)) return new Response("Invalid asset", { status: 400 });
+      const image = await fetch(`https://assets.playnccdn.com/static-aion2-gamedata/resources/${name}`);
+      const out = new Response(image.body, image);
+      out.headers.set("Cache-Control", "public,max-age=86400");
+      return cors(out, origin);
+    }
     if (!upstream[kind]) return new Response("Not found", { status: 404 });
     const region = url.searchParams.get("region") || "la";
     if (!["la", "nae", "naw", "eu", "as"].includes(region))

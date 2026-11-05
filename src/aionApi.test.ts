@@ -11,7 +11,7 @@ describe("importação oficial", () => {
       equipment: { equipment: { equipmentList: [
         { id: 1, name: "Espada real", grade: "Unique", icon: "https://example/icon.png", enchantLevel: 10, exceedLevel: 2, slotPosName: "MainHand" },
         { id: 2, name: "Cálice do Vigor", grade: "Unique", icon: "https://example/arcana.png", enchantLevel: 5, exceedLevel: 0, slotPosName: "Arcana1" },
-      ] }, skill: { skillList: [{ name: "Julgamento", skillLevel: 20 }] } },
+      ], skinList: [{ id: 3, name: "Visual real", grade: "Legend", icon: "https://example/skin.png", slotPosName: "Torso" }] }, skill: { skillList: [{ name: "Julgamento", skillLevel: 20 }] } },
     });
     expect(out.items.Arma?.name).toBe("Espada real");
     expect(out.items.Arma?.exceedLevel).toBe(2);
@@ -19,6 +19,7 @@ describe("importação oficial", () => {
     expect(out.arcanas[0].lines[0].bonus).toBe(3);
     expect(out.gs).toBe(321);
     expect(out.cp).toBe(999);
+    expect(out.skins?.[0].name).toBe("Visual real");
   });
 
   it("força uma leitura nova do perfil e do equipamento", async () => {

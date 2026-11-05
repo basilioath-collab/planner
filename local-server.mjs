@@ -26,7 +26,12 @@ http.createServer(async (req,res)=>{
 }).listen(port,"127.0.0.1",()=>console.log(`ASEO protegido em http://127.0.0.1:${port}`));
 
 async function proxy(url,res){
-  const kind=url.pathname.split("/").at(-1);if(!upstream[kind]){res.writeHead(404);return res.end("Endpoint inválido")}
+  const kind=url.pathname.split("/").at(-1);
+  if(kind==="asset"){
+    const name=url.searchParams.get("name")||"";if(!/^[A-Za-z0-9_.-]+\.(png|webp)$/i.test(name)){res.writeHead(400);return res.end("Asset inválido")}
+    const response=await fetch(`https://assets.playnccdn.com/static-aion2-gamedata/resources/${name}`,{headers:{"User-Agent":"ASEO-Gear-Planner/1.0"}});res.writeHead(response.status,{"Content-Type":response.headers.get("content-type")||"image/png","Cache-Control":"public,max-age=86400"});return res.end(Buffer.from(await response.arrayBuffer()));
+  }
+  if(!upstream[kind]){res.writeHead(404);return res.end("Endpoint inválido")}
   const region=url.searchParams.get("region")||"la";if(!["la","nae","naw","eu","as"].includes(region)){res.writeHead(400);return res.end("Região inválida")}
   const target=new URL(upstream[kind]);
   if(kind==="search"){const nick=(url.searchParams.get("nick")||"").trim();if(!/^[\p{L}\p{N}_-]{2,20}$/u.test(nick)){res.writeHead(400);return res.end("Nickname inválido")}target.searchParams.set("keyword",nick);target.searchParams.set("localeInfo","pt-BR")}

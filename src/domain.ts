@@ -26,6 +26,13 @@ export type Item = {
   externalId?: number;
   exceedLevel?: number;
 };
+export type Skin = {
+  id: number;
+  slot: string;
+  name: string;
+  rarity: string;
+  icon: string;
+};
 export type Frame = {
   x: number;
   y: number;
@@ -38,6 +45,7 @@ export type Build = {
   id: string;
   name: string;
   items: Record<string, Item | undefined>;
+  skins?: Skin[];
   arcanas: Arcana[];
   totals: Record<string, number>;
   rings: Record<string, number>;

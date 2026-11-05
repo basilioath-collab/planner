@@ -189,7 +189,7 @@ export default function App() {
           <Shield />
           <div>
             <b>ASEO</b>
-            <span>Aion 2 Gear Planner</span>
+            <span>Deus Armory · Personal Archive</span>
           </div>
         </div>
         <nav>
@@ -247,7 +247,7 @@ export default function App() {
             Planejada <Sparkles size={14} />
           </button>
         </div>
-        <span>ASEO · TEMPLÁRIO · ZIKEL · AMÉRICA DO SUL</span>
+        <span>DEUS ARCHIVE // ASEO · TEMPLÁRIO · ZIKEL</span>
         <div className="metrics">
           <em>
             GS <b>{shown.gs.toLocaleString("pt-BR")}</b>
@@ -278,10 +278,10 @@ export default function App() {
           <div className="spire s1" />
           <div className="spire s2" />
           <div className="identity">
-            <small>GUARDIÃ DE ZIKEL</small>
+            <small>REGISTRO DE COMBATE · ZIKEL 2402</small>
             <h1>Aseo</h1>
             <p>
-              Templário <i /> Nível a conferir
+              Templário <i /> América do Sul
             </p>
           </div>
           <div
@@ -330,6 +330,7 @@ export default function App() {
               </div>
             )}
           </div>
+          {!!shown.skins?.length && <AppearanceRibbon skins={shown.skins} />}
           {!capture && image && (
             <div className="frameTools">
               <label>
@@ -544,6 +545,14 @@ export default function App() {
       )}
     </main>
   );
+}
+function AppearanceRibbon({skins}:{skins:NonNullable<Build["skins"]>}){
+  return <section className="appearanceRibbon" aria-label="Aparências equipadas">
+    <div className="appearanceTitle"><span>VISUAL EQUIPADO</span><b>{skins.length.toString().padStart(2,"0")}</b></div>
+    <div className="appearanceItems">{skins.map(s=><figure key={`${s.slot}-${s.id}`} title={`${s.name} · ${s.rarity}`} data-grade={s.rarity}>
+      <img src={s.icon} alt=""/><figcaption><small>{s.slot.replace(/Wear|Main|L|R/g,"")}</small><b>{s.name.replace(/ \([^)]*\)$/,"")}</b></figcaption>
+    </figure>)}</div>
+  </section>
 }
 function HeroSearch({base,onApply,ready}:{base:Build;onApply:(b:Build)=>void;ready:boolean}){
   const saved=(()=>{try{return JSON.parse(localStorage.getItem("aseo-profile")||"{}")}catch{return {}}})();
