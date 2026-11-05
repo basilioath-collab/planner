@@ -1,2 +1,36 @@
-import {test,expect} from '@playwright/test';
-test('importa o perfil público da Aseo e exibe equipamentos reais',async({page})=>{await page.goto('/');await page.getByTitle('Importar perfil oficial').click();await expect(page.getByText('Carregar personagem por nick')).toBeVisible();await page.getByRole('button',{name:'Buscar'}).click();const aseo=page.getByRole('button',{name:/Aseo.*Zikel.*Nv\. 45/}).first();await expect(aseo).toBeVisible({timeout:15000});await aseo.click();await expect(page.getByText('Prévia antes de aplicar')).toBeVisible({timeout:15000});await expect(page.getByText(/21 slots oficiais/)).toBeVisible();await page.getByRole('button',{name:'Importar e começar a planejar'}).click();await expect(page.getByText('Espada de Kromede Furiosa')).toBeVisible();await expect(page.getByText('2.770')).toBeVisible();await page.getByRole('button',{name:'Arcanas'}).click();const arts=page.locator('.arcanaArt img');await expect(arts).toHaveCount(5);for(let i=0;i<5;i++)await expect.poll(()=>arts.nth(i).evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);await page.screenshot({path:'artifacts/aseo-arcanas.png',fullPage:true})});
+import { test, expect } from "@playwright/test";
+test("atualiza pelo nickname e servidor com detalhes oficiais", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByTitle("Atualizar personagem").click();
+  await expect(
+    page.getByText("Atualizar personagem", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Atualizar agora" }).click();
+  await expect(page.getByText("Prévia antes de aplicar")).toBeVisible({
+    timeout: 30000,
+  });
+  await expect(page.getByText(/21 slots atualizados/)).toBeVisible();
+  await page.getByRole("button", { name: "Aplicar atualização" }).click();
+  await expect(page.getByText("Espada de Kromede Furiosa")).toBeVisible();
+  await expect(page.getByText("2.770")).toBeVisible();
+  await page
+    .getByRole("button", { name: /Arma Espada de Kromede Furiosa/ })
+    .click();
+  await expect(page.getByText(/Amplificação de Dano de Arma/).last()).toBeVisible();
+  await page.getByLabel("Fechar").click();
+  await page.getByRole("button", { name: "Arcanas" }).click();
+  const arts = page.locator(".arcanaArt img");
+  await expect(arts).toHaveCount(5);
+  for (let i = 0; i < 5; i++)
+    await expect
+      .poll(() =>
+        arts
+          .nth(i)
+          .evaluate(
+            (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
+          ),
+      )
+      .toBe(true);
+});

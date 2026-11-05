@@ -17,6 +17,7 @@ type ApiEquipment = {
   enchantLevel: number;
   exceedLevel: number;
   slotPosName: string;
+  slotPos: number;
 };
 const slotMap: Record<string, string> = {
   MainHand: "Arma",
@@ -63,7 +64,22 @@ export async function fetchCharacter(hit: CharacterHit) {
     json(`/info?${q}`),
     json(`/equipment?${q}`),
   ]);
-  return { info, equipment };
+  const rows: ApiEquipment[] = equipment?.equipment?.equipmentList || [];
+  const details: Record<number, any> = {};
+  for (let i = 0; i < rows.length; i += 5) {
+    await Promise.all(
+      rows.slice(i, i + 5).map(async (x) => {
+        try {
+          details[x.slotPos] = await json(
+            `/item?${q}&id=${x.id}&slotPos=${x.slotPos}&enchantLevel=${x.enchantLevel}&exceedLevel=${x.exceedLevel || 0}`,
+          );
+        } catch {
+          /* o resumo oficial permanece utilizável */
+        }
+      }),
+    );
+  }
+  return { info, equipment, details };
 }
 export function applyOfficialImport(base: Build, payload: any): Build {
   const list: ApiEquipment[] =
@@ -72,16 +88,30 @@ export function applyOfficialImport(base: Build, payload: any): Build {
   for (const x of list) {
     const slot = slotMap[x.slotPosName];
     if (!slot || x.slotPosName.startsWith("Arcana")) continue;
+    const d = payload.details?.[x.slotPos];
+    const stat = (v: any) =>
+      `${v.name}: ${v.minValue ? `${v.minValue}–` : ""}${v.value}${v.extra && v.extra !== "0" ? ` (+${v.extra} aprim.)` : ""}`;
     items[slot] = {
       id: `official-${x.slotPosName}-${x.id}`,
       slot,
       name: x.name,
       rarity: x.grade,
       enhancement: x.enchantLevel,
-      attributes: [],
-      additionals: [],
-      notes: x.exceedLevel ? `Transcendência +${x.exceedLevel}` : "",
-      source: "Perfil oficial Aion 2 · linhas adicionais não expostas pela API",
+      attributes: (d?.mainStats || []).map(stat),
+      additionals: [
+        ...(d?.subStats || []).map(stat),
+        ...(d?.subSkills || []).map((v: any) => `${v.name} +${v.level}`),
+      ],
+      notes: [
+        x.exceedLevel ? `Transcendência +${x.exceedLevel}` : "",
+        ...(d?.magicStoneStat || []).map(
+          (v: any) => `Manastone: ${v.name} ${v.value}`,
+        ),
+        ...(d?.godStoneStat || []).map((v: any) => `${v.name}: ${v.desc}`),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      source: `Perfil oficial Aion 2${d?.sources?.length ? ` · ${d.sources.join(", ")}` : ""}`,
       updated: new Date().toISOString().slice(0, 10),
       preserve: false,
       icon: x.icon,
@@ -131,6 +161,6 @@ export function applyOfficialImport(base: Build, payload: any): Build {
       payload.info?.stat?.statList?.find((x: any) => x.type === "ItemLevel")
         ?.value ?? base.gs,
     cp: payload.info?.profile?.combatPower ?? base.cp,
-    name: `Atual · importada ${new Date().toLocaleDateString("pt-BR")}`,
+    name: `Atual · sincronizada ${new Date().toLocaleDateString("pt-BR")}`,
   };
 }

@@ -39,7 +39,6 @@ import {
   applyOfficialImport,
   fetchCharacter,
   searchCharacters,
-  type CharacterHit,
 } from "./aionApi";
 import "./App.css";
 import "./Profile.css";
@@ -52,7 +51,13 @@ const clone = <T,>(x: T): T => structuredClone(x),
     background: 0.8,
     light: 0.75,
   };
-const withArcanaArt=(b:Build):Build=>({...b,arcanas:b.arcanas.map(a=>({...a,icon:a.icon||initialBuild.arcanas.find(x=>x.id===a.id)?.icon}))});
+const withArcanaArt = (b: Build): Build => ({
+  ...b,
+  arcanas: b.arcanas.map((a) => ({
+    ...a,
+    icon: a.icon || initialBuild.arcanas.find((x) => x.id === a.id)?.icon,
+  })),
+});
 function dl(blob: Blob, name: string) {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -210,8 +215,11 @@ export default function App() {
             <Save size={13} />
             {status}
           </span>
-          <button onClick={() => setProfileImport(true)} title="Importar perfil oficial">
-            <Upload /> Perfil
+          <button
+            onClick={() => setProfileImport(true)}
+            title="Atualizar personagem"
+          >
+            <Upload /> Atualizar
           </button>
           <button onClick={undo} disabled={!history.length} title="Desfazer">
             <Undo2 />
@@ -536,11 +544,99 @@ export default function App() {
     </main>
   );
 }
-function ProfileImport({base,onClose,onApply}:{base:Build;onClose:()=>void;onApply:(b:Build)=>void}) {
-  const [nick,setNick]=useState("Aseo"),[region,setRegion]=useState("la"),[hits,setHits]=useState<CharacterHit[]>([]),[candidate,setCandidate]=useState<Build>(),[busy,setBusy]=useState(false),[error,setError]=useState("");
-  const search=async()=>{setBusy(true);setError("");try{setHits(await searchCharacters(nick,region))}catch(e){setError((e as Error).message)}finally{setBusy(false)}};
-  const choose=async(hit:CharacterHit)=>{setBusy(true);setError("");try{setCandidate(applyOfficialImport(base,await fetchCharacter(hit)))}catch(e){setError((e as Error).message)}finally{setBusy(false)}};
-  return <div className="modal profileModal"><div><header><div><small>IMPORTAÇÃO OFICIAL</small><h2>Carregar personagem por nick</h2></div><button onClick={onClose}><X/></button></header><p>Equipamentos, ícones, aprimoramentos, asas, arcanas e níveis públicos. Adicionais rolados continuam manuais porque a API não os expõe.</p><div className="profileSearch"><input value={nick} onChange={e=>setNick(e.target.value)} placeholder="Nickname"/><select value={region} onChange={e=>setRegion(e.target.value)}><option value="la">América do Sul</option><option value="na">América do Norte</option><option value="eu">Europa</option></select><button onClick={search} disabled={busy||!nick.trim()}>{busy?'Consultando…':'Buscar'}</button></div>{error&&<p className="importError">{error}</p>}{!candidate&&<div className="profileHits">{hits.map(h=><button key={h.characterId} onClick={()=>choose(h)}><b>{h.name}</b><span>{h.serverName} · Nv. {h.level}</span></button>)}</div>}{candidate&&<div className="importPreview"><h3>Prévia antes de aplicar</h3><p><b>{Object.keys(candidate.items).length}</b> slots oficiais, <b>{candidate.arcanas.length}</b> arcanas preservando a distribuição manual, GS <b>{candidate.gs}</b> e CP <b>{candidate.cp.toLocaleString('pt-BR')}</b>.</p><p>A build planejada será recriada a partir desta atual. Sua imagem central e enquadramento não mudam.</p><button onClick={()=>setCandidate(undefined)}>Voltar</button><button className="primary" onClick={()=>onApply(candidate)}>Importar e começar a planejar</button></div>}</div></div>
+function ProfileImport({
+  base,
+  onClose,
+  onApply,
+}: {
+  base: Build;
+  onClose: () => void;
+  onApply: (b: Build) => void;
+}) {
+  const savedProfile = (() => { try { return JSON.parse(localStorage.getItem("aseo-profile") || "{}"); } catch { return {}; } })();
+  const [nick, setNick] = useState(savedProfile.nick || "Aseo"),
+    [server, setServer] = useState(savedProfile.server || "Zikel"),
+    [region, setRegion] = useState("la"),
+    [candidate, setCandidate] = useState<Build>(),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const refresh = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const hits = await searchCharacters(nick, region);
+      const hit = hits.find((h) => h.name.toLocaleLowerCase() === nick.trim().toLocaleLowerCase() && h.serverName.toLocaleLowerCase() === server.trim().toLocaleLowerCase());
+      if (!hit) throw Error(`Personagem ${nick} não encontrado no servidor ${server}. Confira a grafia.`);
+      localStorage.setItem("aseo-profile", JSON.stringify({ nick: nick.trim(), server: server.trim(), region }));
+      setCandidate(applyOfficialImport(base, await fetchCharacter(hit)));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="modal profileModal">
+      <div>
+        <header>
+          <div>
+            <small>PERFIL OFICIAL · NCSOFT</small>
+            <h2>Atualizar personagem</h2>
+          </div>
+          <button onClick={onClose}>
+            <X />
+          </button>
+        </header>
+        <p>
+          Digite seu nickname e servidor. O ASEO atualiza equipamentos,
+          atributos, adicionais rolados, habilidades, manastones, theostones,
+          ícones, arcanas, GS e CP.
+        </p>
+        <div className="profileSearch">
+          <input
+            value={nick}
+            onChange={(e) => setNick(e.target.value)}
+            placeholder="Nickname"
+          />
+          <input
+            value={server}
+            onChange={(e) => setServer(e.target.value)}
+            placeholder="Servidor, ex.: Zikel"
+          />
+          <select value={region} onChange={(e) => setRegion(e.target.value)}>
+            <option value="la">América do Sul</option>
+            <option value="nae">América do Norte Leste</option>
+            <option value="naw">América do Norte Oeste</option>
+            <option value="eu">Europa</option>
+            <option value="as">Ásia</option>
+          </select>
+          <button onClick={refresh} disabled={busy || !nick.trim() || !server.trim()}>
+            {busy ? "Atualizando detalhes…" : "Atualizar agora"}
+          </button>
+        </div>
+        {error && <p className="importError">{error}</p>}
+        {candidate && (
+          <div className="importPreview">
+            <h3>Prévia antes de aplicar</h3>
+            <p>
+              <b>{Object.keys(candidate.items).length}</b> slots atualizados com detalhes oficiais,{" "}
+              <b>{candidate.arcanas.length}</b> arcanas preservando a
+              distribuição manual, GS <b>{candidate.gs}</b> e CP{" "}
+              <b>{candidate.cp.toLocaleString("pt-BR")}</b>.
+            </p>
+            <p>
+              A build planejada será recriada a partir desta atual. Sua imagem
+              central e enquadramento não mudam.
+            </p>
+            <button onClick={() => setCandidate(undefined)}>Voltar</button>
+            <button className="primary" onClick={() => onApply(candidate)}>
+              Aplicar atualização
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function Slot({
@@ -847,7 +943,16 @@ function ArcanaPanel({
         {arcanas.map((a) => (
           <article key={a.id}>
             <div className="arcanaArt">
-              {a.icon ? <img src={a.icon} crossOrigin="anonymous" referrerPolicy="no-referrer" alt={a.name} /> : <Shield />}
+              {a.icon ? (
+                <img
+                  src={a.icon}
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
+                  alt={a.name}
+                />
+              ) : (
+                <Shield />
+              )}
               <span>{a.family}</span>
             </div>
             <header>

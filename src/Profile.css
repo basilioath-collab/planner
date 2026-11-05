@@ -26,7 +26,7 @@
 }
 .profileSearch {
   display: grid;
-  grid-template-columns: 1fr 180px auto;
+  grid-template-columns: 1fr 1fr 210px auto;
   gap: 8px;
   margin: 18px 0;
 }
