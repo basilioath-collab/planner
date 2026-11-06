@@ -16,4 +16,23 @@ describe("contexto de classe",()=>{
     expect(arcanaTargetsFor(chanter,"Cálice do Vigor")).toEqual(["Esmagamento Sombrio"]);
     expect(arcanaTargetsFor(chanter,"Bússola do Vigor")).toContain("Recuperação");
   });
+  it("possui estratégia isolada para as oito classes Global",()=>{
+    const classes=["Templário","Encantador","Gladiador","Assassino","Arqueiro","Mago","Espiritualista","Clérigo"];
+    const resolved=classes.map(name=>strategyFor(name));
+    expect(resolved.every(Boolean)).toBe(true);
+    expect(new Set(resolved.map(x=>x!.id)).size).toBe(8);
+    for(const strategy of resolved){
+      expect(strategy!.skills.length).toBeGreaterThanOrEqual(3);
+      expect(strategy!.ringSkills.length).toBeGreaterThanOrEqual(3);
+      expect(Object.keys(strategy!.arcana).length).toBe(5);
+      expect(strategy!.source.url).toMatch(/^https:\/\//);
+    }
+  });
+  it("não oferece skills de Templário aos outros perfis",()=>{
+    for(const name of ["Gladiador","Assassino","Arqueiro","Mago","Espiritualista","Clérigo","Encantador"]){
+      const strategy=strategyFor(name)!;
+      expect(strategy.ringSkills).not.toContain("Julgamento");
+      expect(strategy.arcana["manuscrito"]||[]).not.toContain("Punição");
+    }
+  });
 });
