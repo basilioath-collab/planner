@@ -1,7 +1,9 @@
 {
   "name": "aseo-gear-planner",
+  "description": "PAD PLAN — companion e planejador pessoal para Aion 2",
+  "author": "PAD PLAN",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +11,26 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "desktop": "npm run build && electron electron/main.cjs",
+    "desktop:pack": "npm run build && electron-builder --win portable"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.padplan.aion2",
+    "productName": "PAD PLAN",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "portable",
+      "artifactName": "PAD-PLAN-${version}-portable.${ext}"
+    }
   },
   "dependencies": {
     "framer-motion": "^14.9.1",
@@ -28,6 +49,8 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
     "jsdom": "^30.1.3",
     "oxlint": "^1.90.0",
     "typescript": "~7.0.2",

@@ -2,6 +2,28 @@
 
 Planejador local-first para qualquer personagem carregado. Separa build atual e planejada, analisa equipamentos, adicionais, skills e arcanas, persiste imagem/enquadramento no IndexedDB e exporta backups e capturas PNG.
 
+## Aplicativo Windows
+
+O PAD PLAN também funciona como companion desktop Electron. O executável portátil inicia uma API exclusivamente em `127.0.0.1:42170`, persiste sessões no diretório de dados do aplicativo e disponibiliza overlay nativo.
+
+```powershell
+npm install
+npm run desktop
+```
+
+Para gerar o executável portátil: `npm run desktop:pack`. O arquivo é criado em `release/PAD-PLAN-0.0.0-portable.exe` e não é versionado no Git.
+
+Módulos desktop entregues:
+
+- Arsenal, planejamento por classe, equipamentos e Arcanas.
+- API local `/health`, `/v1/state` e `/v1/sessions`.
+- Importação e histórico de sessões de combate em JSON.
+- Ranking por dano, cura e dano recebido.
+- Overlay nativo opcional para a sessão selecionada.
+- Coleção local de mascotes e registros pessoais de chefes e eventos.
+
+O adaptador de captura automática permanece desativado até existir um parser validado para o cliente Global. O aplicativo não lê memória, não injeta código e não apresenta números simulados como telemetria real.
+
 ## Executar
 
 Requer Node.js 20+: `npm install` e `npm run dev`. Produção: `npm run build && npm run preview`. Testes: `npm test`.

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Archive, ArrowRight, Check, ChevronDown, CircleGauge, Download, Gem, ImagePlus, Layers3, Menu, Minus, PawPrint, Plus, RotateCcw, Search, Shield, Sparkles, Swords, Target, Upload, X } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, CircleGauge, Download, Gem, ImagePlus, Layers3, Menu, Minus, PawPrint, Plus, RotateCcw, Search, Shield, Sparkles, Swords, Target, Upload, X } from "lucide-react";
 import { additionsForSlot } from "./additionalCatalog";
 import { applyOfficialImport, fetchCharacter, pickCharacter, searchCharacters } from "./aionApi";
 import { addArcanaPoint, attemptsLeft, initialBuild, pointsAvailable, pointsUsed, projectedTotals, slots, type Build, type Frame, type Item } from "./domain";
 import { exportBackup, loadState, parseBackup, saveState } from "./storage";
 import { arcanaTargetsFor, classGoals, strategyFor, visibleSkills } from "./classContext";
+import { CombatCenter, WorldCenter } from "./CompanionModules";
 import "./V5.css";
 
 type View = "armory" | "arcana" | "progress" | "combat" | "collection";
@@ -55,8 +56,8 @@ export default function V5(){
         {view==="armory"&&<Armory key="armory" build={shown} image={image} frame={frame} setFrame={setFrame} onImage={importImage} selected={selected} onSelect={setSelected} totals={totals}/>} 
         {view==="arcana"&&<ArcanaStudio key="arcana" current={current} planned={planned} setPlanned={setPlanned} notify={notify}/>} 
         {view==="progress"&&<Progress key="progress" current={current} planned={planned} image={image} frame={frame} notify={notify}/>} 
-        {view==="combat"&&<FeaturePage key="combat" icon={<Swords/>} kicker="COMBAT OBSERVATORY" title="Combate, sem ruído" text="O módulo ao vivo será conectado ao companion local. Aqui não existem números simulados: importe uma sessão quando tiver um arquivo real."/>}
-        {view==="collection"&&<FeaturePage key="collection" icon={<PawPrint/>} kicker="ATIEL COLLECTION" title="Tudo que acompanha sua jornada" text="Pets, skins e conquistas entrarão aqui como coleção do personagem carregado — não como catálogo genérico."/>}
+        {view==="combat"&&<CombatCenter key="combat"/>}
+        {view==="collection"&&<WorldCenter key="collection"/>}
       </AnimatePresence>
     </div>
     <AnimatePresence>{selected&&<ItemSheet slot={selected} item={planned.items[selected]} build={planned} onClose={()=>setSelected(undefined)} onChange={updateItem}/>}</AnimatePresence>
@@ -119,4 +120,3 @@ function ArcanaStudio({current,planned,setPlanned,notify}:{current:Build;planned
 
 function Progress({current,planned,image,frame,notify}:{current:Build;planned:Build;image?:string;frame:Frame;notify:(s:string)=>void}){const totals=projectedTotals(current,planned),goals=classGoals(planned,totals),strategy=strategyFor(planned.profile.className);const backup=()=>{const blob=exportBackup({current,planned,image,frame,version:1});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pad-plan-backup.json";a.click();URL.revokeObjectURL(a.href)};return <motion.section className="progress5" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}><div className="pageIntro"><div><span>BUILD ROADMAP · {planned.profile.className.toUpperCase()}</span><h1>Próximos movimentos</h1><p>{strategy?`${strategy.role} · ${strategy.weapon} · ${strategy.source.context}`:"Metas derivadas somente das habilidades importadas deste personagem."}</p></div><div className="backupActions"><button onClick={backup}><Download/>Exportar backup</button><label><Upload/>Importar<input type="file" accept="application/json" onChange={e=>{const f=e.target.files?.[0];if(f)f.text().then(t=>{try{parseBackup(t);notify("Backup válido. Importação protegida disponível.")}catch{notify("Arquivo inválido; nada foi alterado")}})}}/></label></div></div><div className="roadmap">{goals.map((goal,i)=><article key={goal.title}><span>{String(i+1).padStart(2,"0")}</span><div><small>{goal.kind}</small><h3>{goal.title}</h3><p>{goal.text} · Fonte: {goal.source}</p></div><b>{goal.value||"—"}</b></article>)}</div></motion.section>}
 
-function FeaturePage({icon,kicker,title,text}:{icon:React.ReactNode;kicker:string;title:string;text:string}){return <motion.section className="feature5" initial={{opacity:0,scale:.99}} animate={{opacity:1,scale:1}}><div className="featureGlyph">{icon}</div><span>{kicker}</span><h1>{title}</h1><p>{text}</p><div className="featureState"><Archive/><div><b>Módulo reservado</b><small>A estrutura não inventa telemetria nem integrações.</small></div></div></motion.section>}
