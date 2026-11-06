@@ -9,7 +9,8 @@ const root = join(process.cwd(), "dist");
 const mime = { ".js":"text/javascript; charset=utf-8", ".css":"text/css; charset=utf-8", ".png":"image/png", ".webp":"image/webp", ".svg":"image/svg+xml" };
 const upstream = { search:"https://api-search.plaync.com/aion2global/search/v2/character", info:"https://aion2.plaync.com/api/character/info", equipment:"https://aion2.plaync.com/api/character/equipment", item:"https://aion2.plaync.com/api/character/equipment/item" };
 const attempts = new Map();
-const page = `<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07100f"><meta name="robots" content="noindex,nofollow"><title>PAD PLAN — Aion 2 Personal Build Analytics</title><link rel="stylesheet" href="/assets/app.css"></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>`;
+const buildStamp = "d121949";
+const page = `<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07100f"><meta name="robots" content="noindex,nofollow"><title>PAD PLAN — Aion 2 Personal Build Analytics</title><link rel="stylesheet" href="/assets/app.css?v=${buildStamp}"></head><body><div id="root"></div><script type="module" src="/assets/app.js?v=${buildStamp}"></script></body></html>`;
 
 http.createServer(async (req,res)=>{
   try{
@@ -21,7 +22,7 @@ http.createServer(async (req,res)=>{
     if(url.pathname.startsWith("/aion-api/"))return proxy(url,res);
     if(url.pathname==="/"||url.pathname==="/index.html"){res.writeHead(200,{"Content-Type":"text/html; charset=utf-8"});return res.end(page)}
     const relative=normalize(url.pathname).replace(/^([/\\])+/,"");const file=join(root,relative);if(!file.startsWith(root)){res.writeHead(403);return res.end("Forbidden")}
-    if(!(await stat(file)).isFile())throw Error("not found");res.writeHead(200,{"Content-Type":mime[extname(file)]||"application/octet-stream","Cache-Control":"public,max-age=3600"});res.end(await readFile(file));
+    if(!(await stat(file)).isFile())throw Error("not found");res.writeHead(200,{"Content-Type":mime[extname(file)]||"application/octet-stream","Cache-Control":"no-store, max-age=0","Pragma":"no-cache"});res.end(await readFile(file));
   }catch{res.writeHead(404);res.end("Not found")}
 }).listen(port,"127.0.0.1",()=>console.log(`ASEO protegido em http://127.0.0.1:${port}`));
 
