@@ -25,8 +25,9 @@ const bySlot: Record<string, string[]> = {
 const key = (v:string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-");
 const labelOf = (line:string) => line.split(":")[0].replace(/\s+\+\d+.*$/,"").trim();
 
-export function additionsForSlot(slot:string, observed:string[] = []): AdditionalOption[] {
-  const slotOptions = (bySlot[slot] || []).map(label => ({ id:key(label), label, group:(slot.startsWith("Anel") ? "skill" : "atributo") as AdditionalOption["group"], source:"AION2 Guidance · Global S1" }));
+export function additionsForSlot(slot:string, observed:string[] = [], classSkills?:string[]): AdditionalOption[] {
+  const labels = slot.startsWith("Anel") && classSkills ? classSkills : (bySlot[slot] || []);
+  const slotOptions = labels.map(label => ({ id:key(label), label, group:(slot.startsWith("Anel") ? "skill" : "atributo") as AdditionalOption["group"], source:"AION2 Guidance · Global S1" }));
   const observedOptions = observed.map(labelOf).filter(Boolean).map(label => ({ id:key(label), label, group:/\+\d/.test(label) ? "skill" as const : "atributo" as const, source:"Perfil oficial carregado" }));
   return [...slotOptions, ...common, ...observedOptions].filter((x,i,a)=>a.findIndex(y=>key(y.label)===key(x.label))===i).sort((a,b)=>a.label.localeCompare(b.label,"pt-BR"));
 }
