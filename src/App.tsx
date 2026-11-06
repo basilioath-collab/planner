@@ -17,6 +17,9 @@ import {
   Layers3,
   MapPinned,
   BookOpen,
+  Activity,
+  Coins,
+  PawPrint,
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import {
@@ -49,6 +52,10 @@ import { analyzeBuild, type AnalysisContext } from "./recommendations";
 import { additionsForSlot } from "./additionalCatalog";
 import "./App.css";
 import "./Profile.css";
+import { CombatLab, MarketWatch, PetTracker } from "./Operations";
+import "./V4.css";
+
+type AppTab = "gear" | "arcana" | "combat" | "market" | "pets" | "route" | "sources";
 const clone = <T,>(x: T): T => structuredClone(x),
   baseFrame: Frame = {
     x: 0,
@@ -77,7 +84,7 @@ export default function App() {
   const [current, setCurrent] = useState<Build>(() => clone(initialBuild)),
     [planned, setPlanned] = useState<Build>(() => clone(initialBuild)),
     [mode, setMode] = useState<"current" | "planned">("planned"),
-    [tab, setTab] = useState<"gear" | "arcana" | "route" | "sources">("gear"),
+    [tab, setTab] = useState<AppTab>("gear"),
     [image, setImage] = useState<string>(),
     [frame, setFrame] = useState(baseFrame),
     [selected, setSelected] = useState<string>(),
@@ -211,6 +218,9 @@ export default function App() {
         {([
           ["gear", Home, "Início"],
           ["arcana", Layers3, "Arcanas"],
+          ["combat", Activity, "Combate"],
+          ["market", Coins, "Mercado"],
+          ["pets", PawPrint, "Pets"],
           ["route", MapPinned, "Evolução"],
           ["sources", BookOpen, "Referências"],
         ] as const).map(([id, Icon, label]) => <button key={id} className={tab===id?"active":""} onClick={()=>setTab(id)} title={label}><Icon/><span>{label}</span></button>)}
@@ -218,7 +228,7 @@ export default function App() {
       <header>
         <div className="brand">
           <div>
-            <b>{{gear:"Início",arcana:"Arcanas",route:"Evolução",sources:"Referências"}[tab]}</b>
+            <b>{{gear:"Início",arcana:"Arcanas",combat:"Combate",market:"Mercado",pets:"Pets",route:"Evolução",sources:"Referências"}[tab]}</b>
             <span>PAD PLAN · Personal Analysis & Development</span>
           </div>
         </div>
@@ -267,6 +277,9 @@ export default function App() {
       </section>
       {!capture && tab !== "gear" && <section className="modulePage">
         {tab === "arcana" && <ArcanaPanel arcanas={planned.arcanas} currentArcanas={current.arcanas} onEnhance={enhance} onSetLine={setArcanaLine} onSetTarget={setArcanaTarget} />}
+        {tab === "combat" && <CombatLab />}
+        {tab === "market" && <MarketWatch />}
+        {tab === "pets" && <PetTracker />}
         {tab === "route" && <Route totals={projectedTotals(current, planned)} />}
         {tab === "sources" && <Sources />}
       </section>}
